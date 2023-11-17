@@ -16,4 +16,4 @@ Simply open the Playground Demo Project with the Unreal Engine Editor by double 
 - Text Input: 'Enter'
 - Select: 'Left Mouse Click'
 - Options: 'O'
-- Documentation: 'D'
+- Help (Documentation): 'H'
