@@ -1,0 +1,40 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\source\\gltfruntimeeditor\\private\\skeletalmeshexportergltf.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealed\\sharedpch.unrealed.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\gltfruntimeeditor\\definitions.gltfruntimeeditor.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\source\\gltfruntimeeditor\\public\\skeletalmeshexportergltf.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\source\\gltfruntimeeditor\\public\\skeletonexportergltf.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\exporters\\exporter.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\exporter.generated.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntimeeditor\\uht\\skeletonexportergltf.generated.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntimeeditor\\uht\\skeletalmeshexportergltf.generated.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\skeletalmeshrenderdata.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\skeletalmeshlodrenderdata.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\multisizeindexcontainer.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\skeletalmeshvertexbuffer.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\skinweightvertexbuffer.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\skeletalmeshtypes.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\componentreregistercontext.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\skeletalmeshlegacycustomversions.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\gpuskinvertexfactory.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\resourcepool.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\rendercore\\public\\tickableobjectrenderthread.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\matrix3x4.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\core\\public\\uobject\\animobjectversion.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\skeletalmeshduplicatedverticesbuffer.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\skeletalmeshvertexclothbuffer.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\rendering\\morphtargetvertexinfobuffers.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\animation\\skeletalmeshvertexattribute.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\skeletalmeshvertexattribute.generated.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\animation\\skinweightprofile.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\rhi\\public\\rhigpureadback.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\skinweightprofile.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

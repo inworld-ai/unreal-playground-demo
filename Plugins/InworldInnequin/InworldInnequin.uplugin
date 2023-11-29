@@ -1,0 +1,21 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.1",
+	"FriendlyName": "Inworld Innequin",
+	"Description": "Create Innequin Characters for use with InworldAI!",
+	"Category": "Other",
+	"CreatedBy": "InworldAI",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"Installed": true,
+	"Plugins": [
+		{
+			"Name": "InworldAI",
+			"Enabled": true
+		}
+	]
+}

@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntime\\uht\\gltfruntimeanimationcurve.gen.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealed\\sharedpch.unrealed.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\gltfruntime\\definitions.gltfruntime.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\source\\gltfruntime\\public\\gltfruntimeanimationcurve.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntime\\uht\\gltfruntimeanimationcurve.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

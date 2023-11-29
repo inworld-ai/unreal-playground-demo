@@ -1,0 +1,19 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntimeeditor\\uht\\skeletalmeshexportergltf.gen.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealed\\sharedpch.unrealed.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\gltfruntimeeditor\\definitions.gltfruntimeeditor.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\source\\gltfruntimeeditor\\public\\skeletalmeshexportergltf.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\source\\gltfruntimeeditor\\public\\skeletonexportergltf.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\exporters\\exporter.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\exporter.generated.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntimeeditor\\uht\\skeletonexportergltf.generated.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntimeeditor\\uht\\skeletalmeshexportergltf.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

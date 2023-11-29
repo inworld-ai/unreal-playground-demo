@@ -1,0 +1,19 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-glTFRuntimeEditor.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Intermediate\Build\Win64\x64\UnrealEditor\Development\UnrealEd\SharedPCH.UnrealEd.Cpp20.h.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\glTFRuntimeEditor.init.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\glTFRuntimeEditorDelegates.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\SkeletalMeshExporterGLTF.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\SkeletonExporterGLTF.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\glTFRuntimeEditor.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\glTFRuntimeEditorDelegates.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\SkeletalMeshExporterGLTF.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\SkeletonExporterGLTF.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\Default.rc2.res"
+/OUT:"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntimeEditor\UnrealEditor-glTFRuntimeEditor.lib"

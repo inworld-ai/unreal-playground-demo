@@ -1,0 +1,62 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.4.1",
+	"FriendlyName": "InworldAI",
+	"Description": "Integrate Characters from https://studio.inworld.ai",
+	"Category": "AI",
+	"CreatedBy": "InworldAI",
+	"CreatedByURL": "https://www.inworld.ai/",
+	"DocsURL": "https://docs.inworld.ai/docs/tutorial-integrations/unreal-engine/",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"IsBetaVersion": false,
+	"CanContainContent": true,
+	"EnabledByDefault": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "InworldAIClient",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Android",
+				"IOS"
+			]
+		},
+		{
+			"Name": "InworldAIIntegration",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Android",
+				"IOS"
+			]
+		},
+		{
+			"Name": "InworldAIPlatform",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Android",
+				"IOS"
+			]
+		},
+		{
+			"Name": "InworldAIEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac"
+			]
+		}
+	]
+}

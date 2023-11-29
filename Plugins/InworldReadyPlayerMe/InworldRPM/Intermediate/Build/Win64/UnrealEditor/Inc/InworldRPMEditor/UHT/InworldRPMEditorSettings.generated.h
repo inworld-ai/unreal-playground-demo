@@ -1,0 +1,66 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+/*===========================================================================
+	Generated code exported from UnrealHeaderTool.
+	DO NOT modify this manually! Edit the corresponding .h files instead!
+===========================================================================*/
+
+// IWYU pragma: private, include "InworldRPMEditorSettings.h"
+#include "UObject/ObjectMacros.h"
+#include "UObject/ScriptMacros.h"
+
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+#ifdef INWORLDRPMEDITOR_InworldRPMEditorSettings_generated_h
+#error "InworldRPMEditorSettings.generated.h already included, missing '#pragma once' in InworldRPMEditorSettings.h"
+#endif
+#define INWORLDRPMEDITOR_InworldRPMEditorSettings_generated_h
+
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_SPARSE_DATA
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_SPARSE_DATA_PROPERTY_ACCESSORS
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_EDITOR_ONLY_SPARSE_DATA_PROPERTY_ACCESSORS
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_RPC_WRAPPERS_NO_PURE_DECLS
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_ACCESSORS
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_INCLASS_NO_PURE_DECLS \
+private: \
+	static void StaticRegisterNativesUInworldRPMEditorSettings(); \
+	friend struct Z_Construct_UClass_UInworldRPMEditorSettings_Statics; \
+public: \
+	DECLARE_CLASS(UInworldRPMEditorSettings, UObject, COMPILED_IN_FLAGS(0 | CLASS_Config), CASTCLASS_None, TEXT("/Script/InworldRPMEditor"), NO_API) \
+	DECLARE_SERIALIZER(UInworldRPMEditorSettings) \
+	static const TCHAR* StaticConfigName() {return TEXT("InworldAI");} \
+
+
+
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_ENHANCED_CONSTRUCTORS \
+private: \
+	/** Private move- and copy-constructors, should never be used */ \
+	NO_API UInworldRPMEditorSettings(UInworldRPMEditorSettings&&); \
+	NO_API UInworldRPMEditorSettings(const UInworldRPMEditorSettings&); \
+public: \
+	DECLARE_VTABLE_PTR_HELPER_CTOR(NO_API, UInworldRPMEditorSettings); \
+	DEFINE_VTABLE_PTR_HELPER_CTOR_CALLER(UInworldRPMEditorSettings); \
+	DEFINE_DEFAULT_OBJECT_INITIALIZER_CONSTRUCTOR_CALL(UInworldRPMEditorSettings) \
+	NO_API virtual ~UInworldRPMEditorSettings();
+
+
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_15_PROLOG
+#define FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_GENERATED_BODY \
+PRAGMA_DISABLE_DEPRECATION_WARNINGS \
+public: \
+	FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_SPARSE_DATA \
+	FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_SPARSE_DATA_PROPERTY_ACCESSORS \
+	FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_EDITOR_ONLY_SPARSE_DATA_PROPERTY_ACCESSORS \
+	FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_RPC_WRAPPERS_NO_PURE_DECLS \
+	FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_ACCESSORS \
+	FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_INCLASS_NO_PURE_DECLS \
+	FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h_18_ENHANCED_CONSTRUCTORS \
+private: \
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
+
+template<> INWORLDRPMEDITOR_API UClass* StaticClass<class UInworldRPMEditorSettings>();
+
+#undef CURRENT_FILE_ID
+#define CURRENT_FILE_ID FID_Users_filie_Documents_Unreal_Projects_unreal_playground_demo_Plugins_InworldReadyPlayerMe_InworldRPM_Source_InworldRPMEditor_Public_InworldRPMEditorSettings_h
+
+
+PRAGMA_ENABLE_DEPRECATION_WARNINGS

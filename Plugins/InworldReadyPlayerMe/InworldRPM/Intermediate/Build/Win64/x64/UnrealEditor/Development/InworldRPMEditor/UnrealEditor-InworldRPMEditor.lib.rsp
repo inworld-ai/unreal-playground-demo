@@ -1,0 +1,12 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-InworldRPMEditor.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Intermediate\Build\Win64\x64\UnrealEditor\Development\Engine\SharedPCH.Engine.Cpp20.h.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\InworldRPM\Intermediate\Build\Win64\x64\UnrealEditor\Development\InworldRPMEditor\Module.InworldRPMEditor.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\InworldRPM\Intermediate\Build\Win64\x64\UnrealEditor\Development\InworldRPMEditor\Default.rc2.res"
+/OUT:"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\InworldRPM\Intermediate\Build\Win64\x64\UnrealEditor\Development\InworldRPMEditor\UnrealEditor-InworldRPMEditor.lib"

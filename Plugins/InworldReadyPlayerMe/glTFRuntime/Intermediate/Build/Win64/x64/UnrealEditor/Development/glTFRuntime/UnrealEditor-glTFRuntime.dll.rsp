@@ -1,0 +1,113 @@
+/MANIFEST:EMBED
+/MANIFESTINPUT:"..\Build\Windows\Resources\Default-Win64.manifest"
+/NOLOGO
+/DEBUG:FULL
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/FIXED:No
+/NXCOMPAT
+/STACK:12000000
+/DELAY:UNLOAD
+/DLL
+/PDBALTPATH:%_PDB%
+/OPT:NOREF
+/OPT:NOICF
+/INCREMENTAL:NO
+/ignore:4199
+/ignore:4099
+/ALTERNATENAME:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize
+/ALTERNATENAME:__imp___std_init_once_complete=__imp_InitOnceComplete
+/DELAYLOAD:"d3d12.dll"
+/DELAYLOAD:"DBGHELP.DLL"
+/LIBPATH:"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\lib\x64"
+/LIBPATH:"C:\Program Files (x86)\Windows Kits\10\lib\10.0.18362.0\ucrt\x64"
+/LIBPATH:"C:\Program Files (x86)\Windows Kits\10\lib\10.0.18362.0\um\x64"
+/NODEFAULTLIB:"LIBCMT"
+/NODEFAULTLIB:"LIBCPMT"
+/NODEFAULTLIB:"LIBCMTD"
+/NODEFAULTLIB:"LIBCPMTD"
+/NODEFAULTLIB:"MSVCRTD"
+/NODEFAULTLIB:"MSVCPRTD"
+/NODEFAULTLIB:"LIBC"
+/NODEFAULTLIB:"LIBCP"
+/NODEFAULTLIB:"LIBCD"
+/NODEFAULTLIB:"LIBCPD"
+/FUNCTIONPADMIN:6
+/NATVIS:"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\RenderCore\RenderCore.natvis"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Intermediate\Build\Win64\x64\UnrealEditor\Development\UnrealEd\SharedPCH.UnrealEd.Cpp20.h.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFAnimBoneCompressionCodec.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFAnimCurveCompressionCodec.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntime.init.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAnimationCurve.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAsset.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAssetActor.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAssetActorAsync.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeFunctionLibrary.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeParser.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeSoundWave.gen.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFAnimBoneCompressionCodec.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFAnimCurveCompressionCodec.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntime.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAnimationCurve.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAsset.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAssetActor.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeAssetActorAsync.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeFunctionLibrary.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeLight.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeParser.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeParserAudio.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeParserCustom.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeParserMaterials.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeParserSkeletalMeshes.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeParserStaticMeshes.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\glTFRuntimeSoundWave.cpp.obj"
+"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\Default.rc2.res"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\CoreUObject\UnrealEditor-CoreUObject.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\Engine\UnrealEditor-Engine.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\Json\UnrealEditor-Json.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\RenderCore\UnrealEditor-RenderCore.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\RHI\UnrealEditor-RHI.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\ApplicationCore\UnrealEditor-ApplicationCore.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\HTTP\UnrealEditor-HTTP.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\PhysicsCore\UnrealEditor-PhysicsCore.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\Projects\UnrealEditor-Projects.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\MeshDescription\UnrealEditor-MeshDescription.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\StaticMeshDescription\UnrealEditor-StaticMeshDescription.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\AudioExtensions\UnrealEditor-AudioExtensions.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\SkeletalMeshUtilitiesCommon\UnrealEditor-SkeletalMeshUtilitiesCommon.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\UnrealEd\UnrealEditor-UnrealEd.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\AssetRegistry\UnrealEditor-AssetRegistry.lib"
+"..\Intermediate\Build\Win64\x64\UnrealEditor\Development\Core\UnrealEditor-Core.lib"
+"..\Plugins\Runtime\ProceduralMeshComponent\Intermediate\Build\Win64\x64\UnrealEditor\Development\ProceduralMeshComponent\UnrealEditor-ProceduralMeshComponent.lib"
+"delayimp.lib"
+"wininet.lib"
+"rpcrt4.lib"
+"ws2_32.lib"
+"dbghelp.lib"
+"comctl32.lib"
+"Winmm.lib"
+"kernel32.lib"
+"user32.lib"
+"gdi32.lib"
+"winspool.lib"
+"comdlg32.lib"
+"advapi32.lib"
+"shell32.lib"
+"ole32.lib"
+"oleaut32.lib"
+"uuid.lib"
+"odbc32.lib"
+"odbccp32.lib"
+"netapi32.lib"
+"iphlpapi.lib"
+"setupapi.lib"
+"synchronization.lib"
+"dwmapi.lib"
+"imm32.lib"
+"uiautomationcore.lib"
+"DXGI.lib"
+/OUT:"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Binaries\Win64\UnrealEditor-glTFRuntime.dll"
+/IMPLIB:"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Intermediate\Build\Win64\x64\UnrealEditor\Development\glTFRuntime\UnrealEditor-glTFRuntime.sup.lib"
+/PDB:"C:\Users\filie\Documents\Unreal Projects\unreal-playground-demo\Plugins\InworldReadyPlayerMe\glTFRuntime\Binaries\Win64\UnrealEditor-glTFRuntime.pdb"
+/ignore:4078

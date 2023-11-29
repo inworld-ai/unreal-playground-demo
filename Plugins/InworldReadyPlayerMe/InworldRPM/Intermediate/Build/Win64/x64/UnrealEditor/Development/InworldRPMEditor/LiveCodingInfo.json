@@ -1,0 +1,13 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.InworldRPMEditor.cpp.obj": [
+			"InworldRPMEditor.init.gen.cpp.obj",
+			"InworldRPMEditorApi.gen.cpp.obj",
+			"InworldRPMEditorSettings.gen.cpp.obj",
+			"InworldRPMEditorApi.cpp.obj",
+			"InworldRPMEditorModule.cpp.obj",
+			"InworldRPMEditorSettings.cpp.obj"
+		]
+	}
+}

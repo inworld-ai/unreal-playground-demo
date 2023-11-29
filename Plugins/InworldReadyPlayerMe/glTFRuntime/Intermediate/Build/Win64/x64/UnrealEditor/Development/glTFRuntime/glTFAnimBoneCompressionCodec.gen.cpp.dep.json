@@ -1,0 +1,21 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntime\\uht\\gltfanimbonecompressioncodec.gen.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealed\\sharedpch.unrealed.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\gltfruntime\\definitions.gltfruntime.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\source\\gltfruntime\\public\\gltfanimbonecompressioncodec.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\animation\\animbonecompressioncodec.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\animencoding.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\animation\\animsequencedecompressioncontext.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\engine\\public\\animationcompression.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\source\\runtime\\core\\public\\math\\floatpacker.h",
+            "c:\\program files\\epic games\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\animbonecompressioncodec.generated.h",
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntime\\uht\\gltfanimbonecompressioncodec.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

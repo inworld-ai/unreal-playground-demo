@@ -1,0 +1,13 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\unrealeditor\\inc\\gltfruntimeeditor\\uht\\gltfruntimeeditor.init.gen.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealed\\sharedpch.unrealed.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\filie\\documents\\unreal projects\\unreal-playground-demo\\plugins\\inworldreadyplayerme\\gltfruntime\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\gltfruntimeeditor\\definitions.gltfruntimeeditor.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
