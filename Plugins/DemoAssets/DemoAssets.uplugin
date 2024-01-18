@@ -1,0 +1,17 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "DemoAssets",
+	"Description": "Demo assets used for Inworld Playground examples",
+	"Category": "Other",
+	"CreatedBy": "Inworld",
+	"CreatedByURL": "www.inworld.ai",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false
+}
