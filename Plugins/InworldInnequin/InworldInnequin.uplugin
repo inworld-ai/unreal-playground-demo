@@ -10,7 +10,6 @@
 	"DocsURL": "https://docs.inworld.ai/docs/tutorial-integrations/unreal-engine/getting-started/character-setup/inworld-3d-avatar",
 	"MarketplaceURL": "",
 	"SupportURL": "mailto:support@inworld.ai",
-	"EngineVersion": "5.0.0",
 	"CanContainContent": true,
 	"Installed": true,
 	"Plugins": [
