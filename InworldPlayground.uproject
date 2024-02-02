@@ -50,6 +50,10 @@
 		{
 			"Name": "InworldInnequin",
 			"Enabled": true
+		},
+		{
+			"Name": "ChaosFlesh",
+			"Enabled": true
 		}
 	]
 }
