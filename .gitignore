@@ -72,3 +72,7 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Ignore the Innequin plugin as its in  its own seperate repo. Pulling as submodule
+Plugins/InworldInnequinAvatar
+Plugins/InworldInnequinAvatar/*
