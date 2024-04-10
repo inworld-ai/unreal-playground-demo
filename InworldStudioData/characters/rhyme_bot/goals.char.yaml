@@ -1,0 +1,7 @@
+goals:
+  - name: "rhyme"
+    repeatable: True
+    activation:
+      trigger: "rhyme"
+    actions:
+      - instruction: "make a rhyme with {{p.phrase}}"

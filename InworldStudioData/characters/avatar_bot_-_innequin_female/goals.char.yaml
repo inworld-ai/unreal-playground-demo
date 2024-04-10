@@ -1,0 +1,7 @@
+goals:
+- name: "greet_player"
+  activation:
+      trigger: "greet_player"
+  actions:
+    - say_verbatim: "Hello there {player} and welcome to the Avatars Room. You can use this room to see the different 3D avatars supported by Inworld. Let me know if I can answer any questions you may have on this room."
+  

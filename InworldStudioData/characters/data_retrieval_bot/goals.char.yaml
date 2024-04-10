@@ -1,0 +1,47 @@
+intents:
+  - name: "population_in_city"
+    training_phrases:
+      - "What's the population of "
+      - "What is the population of "
+      - "population in"
+      - "population of"
+
+entities:
+  - name: "city"
+    map_entries:
+      - value: "san_francisco"
+        display_name: "San Francisco"
+        synonyms:
+          - "sf"
+          - "san francisco"
+      - value: "new_york"
+        display_name: "New York City"
+        synonyms:
+          - "nyc"
+          - "new york"
+          - "new york city"    
+
+goals: 
+  - name: "get_population_goal"
+    repeatable: true
+    activation:
+      intent: "population_in_city"
+    actions:
+      - send_trigger: "get_population"
+        trigger_params: [city]           
+
+  - name: "provide_population"
+    repeatable: true
+    activation:
+      trigger: "provide_population"
+    actions:
+      - instruction: "tell {player} the population of {{p.city}} is {{p.population}}."
+        emotion_change: JOY   
+
+  - name: "unsupported_city"
+    repeatable: true
+    activation:
+      trigger: "unsupported_city"
+    actions:
+      - instruction: "apologize to {player} for not knowing the population of {{p.city}}." 
+        emotion_change: SADNESS         

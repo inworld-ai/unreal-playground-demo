@@ -1,0 +1,224 @@
+intents:
+  - name: "greeting"
+    training_phrases:
+      - "Hello"
+      - "Hi"
+      - "Hey"
+      - "Hi there"
+      - "Greetings"
+      - "Howdy"
+      - "Hey there"
+      - "Hiya"
+      - "Sup"
+
+  # - name: "left"
+  #   training_phrases:
+  #     - "left"
+  #     - "walk left"
+  #     - "go left"
+  #     - "head left"
+
+  # - name: "right"
+  #   training_phrases:
+  #     - "right"
+  #     - "walk right"
+  #     - "go right"
+  #     - "head right"
+
+  - name: "pizza_liked"
+    training_phrases:
+      - "what pizza do you like?"
+      - "what kind of pizza do you like?"
+      - "do you have a favorite pizza?"
+
+  - name: "song_liked"
+    training_phrases:
+      - "what song do you like?"
+      - "what is your favorite song?"
+      - "do you have a favorite song?"
+
+  - name: "population_in_city"
+    training_phrases:
+      - "What's the population of "
+      - "What is the population of "
+      - "population in"
+      - "population of"
+
+entities:
+  - name: "city"
+    map_entries:
+      - value: "chicago"
+        display_name: "Chicago"
+        synonyms:
+          - "chi town"
+          - "chicago"
+      - value: "london"
+        display_name: "London"
+        synonyms:
+          - "london"
+          - "london town"
+      - value: "los_angeles"
+        display_name: "Los Angeles"
+        synonyms:
+          - "la"
+          - "los angeles"
+      - value: "new_york"
+        display_name: "New York City"
+        synonyms:
+          - "nyc"
+          - "new york"
+          - "new york city"  
+      - value: "san_francisco"
+        display_name: "San Francisco"
+        synonyms:
+          - "sf"
+          - "san fran"
+          - "san francisco"
+
+goals:
+  - name: "greet_player"
+    activation:
+        trigger: "greet_player"
+    actions:
+      - say_verbatim: "Hello there {player} and welcome to the Goals and Actions Room. This room is one of the more advanced rooms in the Inworld Playground. It is used to demostrate API based interaction and responses we support for your characters during a conversation. All of these features can be defined in a flexible code editor in YAML syntax. Please use the menu on the right to learn more about the individual features and how I can demo them for you."
+  
+  # - name: "greeting"
+  #   activation:
+  #     intent: "greeting"
+  #   actions:
+  #     - instruction: "greet {player} and ask if they would like you to walk left or right."
+  #       character_changes:
+  #          enable_goals:
+  #           - "left"
+  #           - "right"
+  #          disable_goals:
+  #            - "left_disabled"
+  #            - "right_disabled"
+
+  # - name: "left"
+  #   enabled_by_default: false
+  #   repeatable: true
+  #   activation:
+  #     intent: "left"
+  #   actions:
+  #     - say_verbatim: "I will head left."    
+  #       character_changes:
+  #          enable_goals:
+  #           - "right"
+  #           - "left_disabled"
+  #          disable_goals: 
+  #           - "left"
+  #           - "right_disabled"
+
+  # - name: "right"
+  #   enabled_by_default: false
+  #   repeatable: true
+  #   activation:
+  #     intent: "right"
+  #   actions:
+  #     - say_verbatim: "I will head right."    
+  #       character_changes:
+  #          enable_goals:
+  #           - "left"
+  #           - "right_disabled"
+  #          disable_goals: 
+  #           - "right"
+  #           - "left_disabled"
+
+  - name: "pizza_liked"
+    repeatable: true
+    activation:
+      intent: "pizza_liked"
+    actions:
+      - instruction: 'Tell {player} that your favorite pizza is Pepperoni.'
+
+  - name: "song_liked"
+    repeatable: true
+    activation:
+      intent: "song_liked"
+    actions:
+      - say_verbatim: "My favorite song is Over the Rainbow by Israel Kamakawiwo'ole."
+
+
+  # - name: "left_disabled"
+  #   enabled_by_default: true
+  #   repeatable: true
+  #   activation:
+  #     intent: "left"
+  #   actions:
+  #     - say_verbatim: "I'm sorry I can't walk left."
+
+  # - name: "right_disabled"
+  #   enabled_by_default: true
+  #   repeatable: true
+  #   activation:
+  #     intent: "right"
+  #   actions:
+  #     - say_verbatim: "I'm sorry I can't walk right."
+
+  - name: "explain_intents"
+    activation:
+        trigger: "explain_intents"
+    actions:
+      - say_verbatim: "Intent Recognition utilizes our real-time engine to scan the player's conversation to identify intents that align with those predefined. When a match is identified, the intent is activated. To test this feature please ask me what kind of pizza I like."
+  
+  - name: "explain_verbatim"
+    activation:
+        trigger: "explain_verbatim"
+    actions:
+      - say_verbatim: "Verbatim Responses allow your character to provide the same exact response to a recognized intent or trigger every time. To test this feature please ask me what song I like a few times. No matter how many times you ask I will always say the very same response."
+
+  - name: "explain_parameters"
+    activation:
+        trigger: "explain_parameters"
+    actions:
+      - say_verbatim: "Parameters are a way to send customized data to the Inworld engine at runtime. To test this please use the trigger menu on the right to select an animal."
+
+  - name: "explain_dynamic_data_retrieval"
+    activation:
+        trigger: "explain_dynamic_data_retrieval"
+    actions:
+      - say_verbatim: "Dynamic Data Retrieval uses Intent Recognition to send triggers from Inworld to the end client which can be detected and used to dynamically provide data to the conversation. To test this feature please ask me the population of Chicago, London, Los Angeles, New York City or San Fransisco."
+  
+  - name: "explain_mutations"
+    activation:
+        trigger: "explain_mutations"
+    actions:
+      - say_verbatim: "Character Mutations are a way to make temporary changes to a character's properties, such as Personality, during runtime. To test this please use the dropdown menu on the right to change my name and then ask me what my name is."
+
+  - name: "explain_enable_disable"
+    activation:
+        trigger: "explain_enable_disable"
+    actions:
+      - say_verbatim: "Enabling and Disabling of goals is a way to control which Goals are active during runtime. To test this use the menu on the right to enable and disable any of the previous goal and then attempt to use them."
+  
+  - name: "demo_parameters"
+    repeatable: true
+    activation:
+        trigger: "demo_parameters"
+    actions:
+      - say_verbatim: "You have selected the {{p.animal}} animal from the menu."
+
+  - name: "get_population_goal"
+    repeatable: true
+    activation:
+      intent: "population_in_city"
+    actions:
+      - send_trigger: "get_population"
+        trigger_params: [city]           
+
+  - name: "provide_population"
+    repeatable: true
+    activation:
+      trigger: "provide_population"
+    actions:
+      - say_verbatim: "The population of {{p.city}} is {{p.population}}."         
+   
+  - name: "set_character_name"
+    repeatable: true
+    activation:
+      trigger: "set_character_name"
+    actions:
+      - character_changes:
+         set_character_name: "{{p.character_name}}"
+      - say_verbatim: "My name has been changed to {{p.character_name}}."

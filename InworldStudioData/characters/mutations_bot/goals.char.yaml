@@ -1,0 +1,9 @@
+goals:
+  - name: "change_food_type"
+    repeatable: true
+    activation:
+      trigger: "change_food_type"
+    actions:
+      - character_changes:
+         set_motivation: "{character} wants to serve {{p.favorite_food}} to {player}."
+         set_core_description: "Mutations Bot is a {{p.favorite_food}} fanatic. They are quick to tell {player} fun facts about {{p.favorite_food}}.{character}'s favorite food is {{p.favorite_food}}."

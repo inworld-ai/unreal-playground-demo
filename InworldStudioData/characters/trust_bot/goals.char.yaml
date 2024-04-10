@@ -1,0 +1,67 @@
+goals:
+  - name: trust_level1
+    repeatable: true
+    activation: 
+      trigger: trust_level1
+    actions: 
+        - character_changes:
+            set_relationship: ENEMY
+            set_relationship_primitives:
+              trust: -1000
+              respect: 0
+              familiar: 0
+            set_personality:
+              negative_positive: 4
+              cautious_open: 2
+              introvert_extravert: 2
+            set_mood:
+              disgust_trust: 2
+            set_emotion: ANGER
+            set_motivation: "{character} doesn't want to tell player any information at all."
+  
+  - name: trust_level2
+    repeatable: true
+    activation: 
+      trigger: trust_level2
+    actions: 
+        - character_changes:
+            set_relationship: ACQUAINTANCE
+            set_relationship_primitives:
+              trust: 0
+              respect: 4
+              familiar: 4
+            set_personality:
+              negative_positive: 6
+              cautious_open: 5
+              introvert_extravert: 5
+            set_mood:
+              disgust_trust: 5
+            set_emotion: NEUTRAL
+            set_motivation: "{character} wants to find a way to trust {player} but isnt ready to share secrets just yet."
+
+  - name: trust_level3
+    repeatable: true
+    activation: 
+      trigger: trust_level3
+    actions: 
+        - character_changes:
+            set_relationship: CLOSE_FRIEND
+            set_relationship_primitives:
+              trust: 1000
+              respect: 9
+              familiar: 9
+            set_personality:
+              negative_positive: 9
+              cautious_open: 9
+              introvert_extravert: 9
+            set_mood:
+              disgust_trust: 9
+            set_emotion: JOY
+            set_motivation: "{character} trusts {player} now, and wants to tell {player} all his knowledge."
+
+
+
+
+
+             
+    

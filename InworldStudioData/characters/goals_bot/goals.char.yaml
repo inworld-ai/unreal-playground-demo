@@ -1,0 +1,86 @@
+intents:
+  - name: "greeting"
+    training_phrases:
+      - "Hello"
+      - "Hi"
+      - "Hey"
+      - "Hi there"
+      - "Greetings"
+      - "Howdy"
+      - "Hey there"
+      - "Hiya"
+      - "Sup"
+
+  - name: "left"
+    training_phrases:
+      - "left"
+      - "walk left"
+      - "go left"
+      - "head left"
+
+  - name: "right"
+    training_phrases:
+      - "right"
+      - "walk right"
+      - "go right"
+      - "head right"
+
+goals:
+  - name: "greeting"
+    activation:
+      intent: "greeting"
+    actions:
+      - instruction: "greet {player} and ask if they would like you to walk left or right."
+        character_changes:
+           enable_goals:
+            - "left"
+            - "right"
+           disable_goals:
+             - "left_disabled"
+             - "right_disabled"
+
+  - name: "left"
+    enabled_by_default: false
+    repeatable: true
+    activation:
+      intent: "left"
+    actions:
+      - say_verbatim: "I will head left."    
+        character_changes:
+           enable_goals:
+            - "right"
+            - "left_disabled"
+           disable_goals: 
+            - "left"
+            - "right_disabled"
+
+  - name: "right"
+    enabled_by_default: false
+    repeatable: true
+    activation:
+      intent: "right"
+    actions:
+      - say_verbatim: "I will head right."    
+        character_changes:
+           enable_goals:
+            - "left"
+            - "right_disabled"
+           disable_goals: 
+            - "right"
+            - "left_disabled"
+
+  - name: "left_disabled"
+    enabled_by_default: true
+    repeatable: true
+    activation:
+      intent: "left"
+    actions:
+      - say_verbatim: "I'm sorry I can't walk left."
+
+  - name: "right_disabled"
+    enabled_by_default: true
+    repeatable: true
+    activation:
+      intent: "right"
+    actions:
+      - say_verbatim: "I'm sorry I can't walk right."

@@ -1,0 +1,28 @@
+{
+  "name": "workspaces/inworld-playground/scenes/avatar_showcase",
+  "description": "Avatar Showcase is a section of the Inworld Playground demo which showcase various avatars you can attach Character component from the Inworld SDK to. ",
+  "sceneTriggersList": [],
+  "displayName": "Avatar Showcase",
+  "commonKnowledgeList": [],
+  "timePeriod": "",
+  "inworldTagsList": [],
+  "defaultSceneAssets": {
+    "sceneImg": "",
+    "sceneImgOriginal": ""
+  },
+  "userTagsList": [],
+  "charactersList": [
+    {
+      "character": "workspaces/inworld-playground/characters/orby"
+    },
+    {
+      "character": "workspaces/inworld-playground/characters/metahuman"
+    },
+    {
+      "character": "workspaces/inworld-playground/characters/alice_the_rpm_ambassador"
+    },
+    {
+      "character": "workspaces/inworld-playground/characters/innequin"
+    }
+  ]
+}

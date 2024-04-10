@@ -1,0 +1,7 @@
+goals:
+  - name: "greet_player"
+    activation:
+        trigger: "greet_player"
+    actions:
+      - say_verbatim: "Hello there {player} and welcome to the virtual lobby of the Inworld Playground. You can use this playground to see the different capabilities that Inworld offers. Each capability has been programmed into it's own 3D room you can test it in. Use the menu on the right to navigate between the different rooms. Let me know if I can answer any questions you may have on the rooms."
+  

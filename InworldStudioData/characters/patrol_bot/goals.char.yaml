@@ -1,0 +1,68 @@
+goals:
+  - name: "motion_area_a"
+    repeatable: true
+    activation:
+      trigger: "motion_area_a"
+    actions:
+      - send_trigger: "motion_area_a"
+        say_verbatim: "Motion detected in Area alpha. Moving out!"
+  - name: "request_area_a"
+    repeatable: true
+    activation:
+      intent: "request_area_a"
+    actions:
+      - say_verbatim: "Request to patrol Area alpha received."
+
+  - name: "motion_area_b"
+    repeatable: true
+    activation:
+      trigger: "motion_area_b"
+    actions:
+      - say_verbatim: "Motion detected in Area beta. On my way!"
+  - name: "request_area_b"
+    repeatable: true
+    activation:
+      intent: "request_area_b"
+    actions:
+      - say_verbatim: "Request to patrol Area beta received."
+
+  - name: "motion_area_c"
+    repeatable: true
+    activation:
+      trigger: "motion_area_c"
+    actions:
+      - say_verbatim: "Motion detected in Area charlie. I'll check it out!"
+  - name: "request_area_c"
+    repeatable: true
+    activation:
+      intent: "request_area_c"
+    actions:
+      - say_verbatim: "Request to patrol Area charlie received."
+
+intents:
+  - name: "request_area_a"
+    training_phrases:
+      - "I need you to patrol area a"
+      - "Patrol area a"
+      - "I need you to patrol area alpha"
+      - "Patrol area alpha"
+      - "Go to a"
+      - "Go to alpha"
+  
+  - name: "request_area_b"
+    training_phrases:
+      - "I need you to patrol area b"
+      - "Patrol area b"
+      - "I need you to patrol area beta"
+      - "Patrol area beta"
+      - "Go to b"
+      - "Go to beta"
+
+  - name: "request_area_c"
+    training_phrases:
+      - "I need you to patrol area c"
+      - "Patrol area c"
+      - "I need you to patrol area charlie"
+      - "Patrol area charlie"
+      - "Go to c"
+      - "Go to charlie"

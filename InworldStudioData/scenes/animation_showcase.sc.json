@@ -1,0 +1,28 @@
+{
+  "name": "workspaces/inworld-playground/scenes/animation_showcase",
+  "description": "Animation Showcase is a section of the Inworld Playground demo which showcases the animations used by the various avatars supported by Inworld. Including demos of how they integrate with the Inworld platform to create immersive interactions.",
+  "sceneTriggersList": [],
+  "displayName": "Animation Showcase",
+  "commonKnowledgeList": [],
+  "timePeriod": "",
+  "inworldTagsList": [],
+  "defaultSceneAssets": {
+    "sceneImg": "",
+    "sceneImgOriginal": ""
+  },
+  "userTagsList": [],
+  "charactersList": [
+    {
+      "character": "workspaces/inworld-playground/characters/emotion_bot"
+    },
+    {
+      "character": "workspaces/inworld-playground/characters/emotion_emily"
+    },
+    {
+      "character": "workspaces/inworld-playground/characters/gesture_bot"
+    },
+    {
+      "character": "workspaces/inworld-playground/characters/gesture_george"
+    }
+  ]
+}

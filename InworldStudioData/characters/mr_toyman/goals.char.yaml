@@ -1,0 +1,63 @@
+intents:
+  - name: "greeting"
+    training_phrases:
+      - "hi"
+      - "hello"
+      - "what's up"
+      - "yo"
+
+goals:
+  - name: "greeting"
+    enabled_by_default: true
+    repeatable: false
+    activation:
+      intent: "greeting"
+      motivation: "player says hello"
+    actions:
+      - instruction: "Ask the player which item they are interested in"
+        send_trigger: enable_interactables
+        character_changes:
+          set_emotion: INTEREST
+          enable_goals:
+            - "item_interacted"
+            - "doll_interacted"
+            - "angry_interacted"
+    
+  - name: "angry_interacted"
+    enabled_by_default: false
+    repeatable: false
+    activation:
+      trigger: "angry_interacted"
+    actions:
+      - instruction: "React to {player} for {{p.action}} the {{p.item}} worth {{p.price}} dollars."
+        character_changes:
+          set_emotion: ANGER
+          set_custom_dialogue_style:
+            set_adjectives:
+              - "annoyed"
+              - "1 sentence response"
+
+  - name: "item_interacted"
+    enabled_by_default: false
+    repeatable: true
+    activation: 
+      trigger: "item_interacted"
+    actions: 
+      - instruction: "Acknowledge {player} {{p.action}} the {{p.item}} and tell them something about that {{p.item}}."        
+
+# legacy goal to support Playground v1.4 and below
+  - name: "doll_interacted"
+    enabled_by_default: false
+    repeatable: false
+    activation:
+      trigger: "doll_interacted"
+    actions:
+      - instruction: "React to {player} for {{p.action}} the {{p.item}} worth {{p.price}} dollars."
+        character_changes:
+          set_emotion: ANGER
+          set_custom_dialogue_style:
+            set_adjectives:
+              - "annoyed"
+              - "1 sentence response"
+
+

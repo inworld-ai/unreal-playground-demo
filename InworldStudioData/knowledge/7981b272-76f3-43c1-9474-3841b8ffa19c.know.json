@@ -1,0 +1,8 @@
+{
+  "name": "workspaces/inworld-playground/common-knowledge/7981b272-76f3-43c1-9474-3841b8ffa19c",
+  "displayName": "Unity Controls",
+  "description": "The player can move around using the keys: W, A, S, D.\nThe player can look around using the mouse.\nThe player can select certain objects using the left mouse button.\nThe player can open the chat panel using the tilde key.\nThe player can pause the game and open the settings menu by pressing the escape key.\nThe push to talk key is C.",
+  "memoryRecordsList": [],
+  "inworldTagsList": [],
+  "userTagsList": []
+}

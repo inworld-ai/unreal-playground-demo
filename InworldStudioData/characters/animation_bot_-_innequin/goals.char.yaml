@@ -1,0 +1,7 @@
+goals:
+  - name: "greet_player"
+    activation:
+        trigger: "greet_player"
+    actions:
+      - say_verbatim: "Hello there {player} and welcome to the Animation Room. You can use this room to see all the animations possible for Inworld's supported 3D characters. Use the menu on the right to see the different characters animate. Let me know if I can answer any questions you may have on this room."
+  

@@ -1,0 +1,19 @@
+{
+  "name": "workspaces/inworld-playground/scenes/inworld_playground_lobby",
+  "description": "Playground lobby is the front entrance to the Playground gallery of showcases and demos. There are portals that lead to rooms where many demos showcasing specific features of the Inworld runtime can be seen. Currently there are 4 main areas: \n1. Goals and Mutations: Examples that showcase how to use Inworld's goals and mutations features with animated characters.\n2. Avatars: where you can see a gallery of how to connect any type of Unreal character, from a simple sphere or custom skeletal mesh, to a metahuman.\n3. Animation: where you can see examples of how Inworld characters can control character and environment animations\n4. Environment: where you can learn how a character can respond to changes and interact with your game's environment.",
+  "sceneTriggersList": [],
+  "displayName": "Inworld Playground Lobby",
+  "commonKnowledgeList": [],
+  "timePeriod": "",
+  "inworldTagsList": [],
+  "defaultSceneAssets": {
+    "sceneImg": "",
+    "sceneImgOriginal": ""
+  },
+  "userTagsList": [],
+  "charactersList": [
+    {
+      "character": "workspaces/inworld-playground/characters/guide"
+    }
+  ]
+}

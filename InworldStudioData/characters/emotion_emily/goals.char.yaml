@@ -1,0 +1,197 @@
+
+goals:
+- name: "greet_player"
+  activation:
+    trigger: "greet_player"
+  actions:
+  - say_verbatim: "Hello there {player} and welcome to the Emotions Room. You can use this room to see all the emotions possible for Inworld's supported 3D characters. Let me know if I can answer any questions you may have on this room."
+- name: "emotion_neutral"
+  activation:
+    trigger:
+    - "emotion_neutral"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_neutral"
+    say_verbatim: "I am not feeling very emotional."
+    emotion_change: "NEUTRAL"
+- name: "emotion_affection"
+  activation:
+    trigger:
+    - "emotion_affection"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_affection"
+    say_verbatim: "I am feeling affectionate."
+    emotion_change: "AFFECTION"
+- name: "emotion_interest"
+  activation:
+    trigger:
+    - "emotion_interest"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_interest"
+    say_verbatim: "I am interested."
+    emotion_change: "INTEREST"
+- name: "emotion_humor"
+  activation:
+    trigger:
+    - "emotion_humor"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_humor"
+    say_verbatim: "You're so funny."
+    emotion_change: "HUMOR"
+- name: "emotion_joy"
+  activation:
+    trigger:
+    - "emotion_joy"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_joy"
+    say_verbatim: "I am so joyful."
+    emotion_change: "JOY"
+- name: "emotion_contempt"
+  activation:
+    trigger:
+    - "emotion_contempt"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_contempt"
+    say_verbatim: "I am feeling contempt."
+    emotion_change: "CONTEMPT"
+- name: "emotion_belligerence"
+  activation:
+    trigger:
+    - "emotion_belligerence"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_belligerence"
+    say_verbatim: "I am feeling belligerent."
+    emotion_change: "BELLIGERENCE"
+- name: "emotion_domineering"
+  activation:
+    trigger:
+    - "emotion_domineering"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_domineering"
+    say_verbatim: "I am feeling a strong need to take charge."
+    emotion_change: "DOMINEERING"
+- name: "emotion_criticism"
+  activation:
+    trigger:
+    - "emotion_criticism"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_criticism"
+    say_verbatim: "I am feeling very critical."
+    emotion_change: "CRITICISM"
+- name: "emotion_anger"
+  activation:
+    trigger:
+    - "emotion_anger"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_anger"
+    say_verbatim: "I am so angry."
+    emotion_change: "ANGER"
+- name: "emotion_defensiveness"
+  activation:
+    trigger:
+    - "emotion_defensiveness"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_defensiveness"
+    say_verbatim: "I am feeling defensive."
+    emotion_change: "DEFENSIVENESS"
+- name: "emotion_tension"
+  activation:
+    trigger:
+    - "emotion_tension"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_tension"
+    say_verbatim: "I am feeling tension."
+    emotion_change: "TENSION"
+- name: "emotion_stonewalling"
+  activation:
+    trigger:
+    - "emotion_stonewalling"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_stonewalling"
+    say_verbatim: "I no longer feel like talking."
+    emotion_change: "STONEWALLING"
+- name: "emotion_tense_humor"
+  activation:
+    trigger:
+    - "emotion_tense_humor"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_tense_humor"
+    say_verbatim: "I am experiencing a mix of humor and tension."
+    emotion_change: "TENSE_HUMOR"
+- name: "emotion_whining"
+  activation:
+    trigger:
+    - "emotion_whining"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_whining"
+    say_verbatim: "I am feeling whiny."
+    emotion_change: "WHINING"
+- name: "emotion_sadness"
+  activation:
+    trigger:
+    - "emotion_sadness"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_sadness"
+    say_verbatim: "I am so sad."
+    emotion_change: "SADNESS"
+- name: "emotion_validation"
+  activation:
+    trigger:
+    - "emotion_validation"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_validation"
+    say_verbatim: "I am feeling validated."
+    emotion_change: "VALIDATION"
+- name: "emotion_disgust"
+  activation:
+    trigger:
+    - "emotion_disgust"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "show_disgust"
+    say_verbatim: "I am so disgusted."
+    emotion_change: "DISGUST"
+- name: "emotion_surprise"
+  activation:
+    trigger:
+    - "emotion_surprise"
+  enabled_by_default: true
+  repeatable: true
+  actions:
+  - name: "express_surprise"
+    say_verbatim: "I am so surprised."
+    emotion_change: "SURPRISE"
