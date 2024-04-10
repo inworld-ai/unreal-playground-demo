@@ -1,0 +1,17 @@
+name: workspaces/inworld-playground/scenes/night
+description: It is Nighttime. Under the stars and moon, the area is hard to see.
+  It feels that it is getting colder, and shelter is something to be desired.
+  There are owls hooting and crickets chirping. The air feels moist.
+sceneTriggersList: []
+displayName: Night
+commonKnowledgeList: []
+timePeriod: ""
+inworldTagsList: []
+defaultSceneAssets:
+  sceneImg: ""
+  sceneImgOriginal: ""
+userTagsList: []
+charactersList:
+  - character: workspaces/inworld-playground/characters/timekeeper
+  - character: workspaces/inworld-playground/characters/mr_toyman
+  - character: workspaces/inworld-playground/characters/patrol_bot

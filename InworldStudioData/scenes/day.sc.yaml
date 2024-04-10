@@ -1,0 +1,22 @@
+name: workspaces/inworld-playground/scenes/day
+description: It is Daytime. Under the bright sun, the area is almost blinding.
+  It feels that it is getting hotter, and shade is something to be desired.
+  There are birds chirping. The air feels dry.
+sceneTriggersList: []
+displayName: Day
+commonKnowledgeList: []
+timePeriod: ""
+inworldTagsList: []
+defaultSceneAssets:
+  sceneImg: ""
+  sceneImgOriginal: ""
+userTagsList: []
+charactersList:
+  - character: workspaces/inworld-playground/characters/guide
+  - character: workspaces/inworld-playground/characters/timekeeper
+  - character: workspaces/inworld-playground/characters/mr_toyman
+  - character: workspaces/inworld-playground/characters/animation_bot_-_innequin
+  - character: workspaces/inworld-playground/characters/innequin
+  - character: workspaces/inworld-playground/characters/emotion_bot
+  - character: workspaces/inworld-playground/characters/lobby_bot_-_innequin
+  - character: workspaces/inworld-playground/characters/patrol_bot

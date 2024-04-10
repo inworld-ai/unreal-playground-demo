@@ -1,0 +1,12 @@
+name: workspaces/inworld-playground/common-knowledge/37198dac-f39f-4279-8704-6d194a6123bc
+displayName: Goals Room
+description: >
+  The Goals Room is one of the more advanced rooms in the Inworld Playground. It
+  is used to demonstrate API based interaction and responses we support for your
+  characters. This room will demonstrate intent recognition, verbatim character
+  responses, sending triggers with dynamic parameters, dynamic data retrieval,
+  mid conversation character mutations and the ability to dynamically enable and
+  disable goals. 
+memoryRecordsList: []
+inworldTagsList: []
+userTagsList: []

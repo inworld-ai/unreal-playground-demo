@@ -1,0 +1,19 @@
+name: workspaces/inworld-playground/scenes/goals_gym
+description: A place to practice inworld goals and actions
+sceneTriggersList: []
+displayName: Goals Gym
+commonKnowledgeList: []
+timePeriod: ""
+inworldTagsList: []
+defaultSceneAssets:
+  sceneImg: ""
+  sceneImgOriginal: ""
+userTagsList: []
+charactersList:
+  - character: workspaces/inworld-playground/characters/data_retrieval_bot
+  - character: workspaces/inworld-playground/characters/goals_bot
+  - character: workspaces/inworld-playground/characters/mutations_bot
+  - character: workspaces/inworld-playground/characters/patrol_bot
+  - character: workspaces/inworld-playground/characters/rhyme_bot
+  - character: workspaces/inworld-playground/characters/trust_bot
+  - character: workspaces/inworld-playground/characters/mr_toyman

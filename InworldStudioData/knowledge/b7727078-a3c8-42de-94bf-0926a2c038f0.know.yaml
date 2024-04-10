@@ -1,0 +1,8 @@
+name: workspaces/inworld-playground/common-knowledge/b7727078-a3c8-42de-94bf-0926a2c038f0
+displayName: Tips
+description: There are giant question marks scattered around the Playground.
+  When {player} walks into one a tip will appear that will give them useful
+  information about navigating and interacting with the Playground.
+memoryRecordsList: []
+inworldTagsList: []
+userTagsList: []
