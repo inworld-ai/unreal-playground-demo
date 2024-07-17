@@ -77,4 +77,5 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Source asset files
+SourceArt/
 Plugins/*/SourceArt/*
