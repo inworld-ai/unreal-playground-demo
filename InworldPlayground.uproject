@@ -32,6 +32,10 @@
 		{
 			"Name": "InworldMetahuman",
 			"Enabled": true
+		},
+		{
+			"Name": "SkeletalMeshModelingTools",
+			"Enabled": true
 		}
 	]
 }

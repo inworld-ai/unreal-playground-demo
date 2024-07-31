@@ -79,3 +79,6 @@ DerivedDataCache/*
 # Source asset files
 SourceArt/
 Plugins/*/SourceArt/*
+
+# Inworld User files
+Content/Inworld/*
