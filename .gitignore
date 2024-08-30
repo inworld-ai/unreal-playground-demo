@@ -83,3 +83,6 @@ Plugins/*/SourceArt/*
 
 # Inworld User files
 Content/Inworld/*
+
+# Mac
+.DS_Store
