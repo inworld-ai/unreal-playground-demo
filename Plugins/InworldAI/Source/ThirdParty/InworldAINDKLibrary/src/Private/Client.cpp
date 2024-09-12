@@ -27,6 +27,10 @@ constexpr int64_t gMaxTokenLifespan = 60 * 45; // 45 minutes
 
 const std::string DefaultTargetUrl = "api-engine.inworld.ai:443";
 
+#define SPEECH_PROCESSOR_CALL(METHOD) \
+    if (_SpeechProcessor) _SpeechProcessor->METHOD; \
+    else Inworld::LogError("SpeechProcessor is not initialized (File: %s, Line: %d)", __FILE__, __LINE__);
+
 static void GrpcLog(gpr_log_func_args* args)
 {
 	if (args->severity != GPR_LOG_SEVERITY_ERROR)
@@ -56,21 +60,14 @@ static void GrpcLog(gpr_log_func_args* args)
 namespace Inworld
 {
 
-	static std::unique_ptr<Client> g_ClientPtr;
-
-	void CreateClient()
+	std::unique_ptr<Client> CreateClient()
 	{
-		g_ClientPtr = std::make_unique<Client>();
+		return std::make_unique<Client>();
 	}
 
-	void DestroyClient()
+	void DestroyClient(std::unique_ptr<Client> client)
 	{
-		g_ClientPtr.reset();
-	}
-
-	std::unique_ptr<Inworld::Client>& GetClient()
-	{
-		return g_ClientPtr;
+		client.reset();
 	}
 
 	class ClientService : public IClientService
@@ -85,7 +82,7 @@ namespace Inworld
 		virtual std::unique_ptr<ServiceSession>& Session() override { return _SessionService; }
 		virtual std::unique_ptr<ClientStream>& Stream() override { return _ClientStream; }
 
-		virtual void OpenSession() override
+		virtual void OpenSession(const ClientHeaderData& Metadata) override
 		{
 			if (!_SessionService)
 			{
@@ -93,7 +90,7 @@ namespace Inworld
 				return;
 			}
 
-			_ClientStream = _SessionService->OpenSession();
+			_ClientStream = _SessionService->OpenSession(Metadata);
 		}
 
 	private:
@@ -132,24 +129,16 @@ const Inworld::SessionInfo& Inworld::Client::GetSessionInfo() const
 void Inworld::Client::SetOptions(const ClientOptions& options)
 {
 	_ClientOptions = options;
-
 }
 
-void Inworld::Client::Visit(const SessionControlResponse_LoadScene& Event)
+const Inworld::ClientOptions& Inworld::Client::GetOptions() const
 {
-	Inworld::Log("Load scene SUCCESS");
-	for (const auto& Info : Event.GetAgentInfos())
-	{
-		Inworld::Log("Character registered: %s, Id: %s, GivenName: %s", Info.BrainName.c_str(), Info.AgentId.c_str(), Info.GivenName.c_str());
-	}
-
-	SetConnectionState(ConnectionState::Connected);
-	StartClientStream();
+	return _ClientOptions;
 }
 
-void Inworld::Client::Visit(const SessionControlResponse_LoadCharacters& Event)
+void Inworld::Client::Visit(const ControlEventCurrentSceneStatus& Event)
 {
-	Inworld::Log("Load characters SUCCESS");
+	Inworld::Log("Scene Status");
 	for (const auto& Info : Event.GetAgentInfos())
 	{
 		Inworld::Log("Character registered: %s, Id: %s, GivenName: %s", Info.BrainName.c_str(), Info.AgentId.c_str(), Info.GivenName.c_str());
@@ -190,26 +179,26 @@ std::shared_ptr<Inworld::TextEvent> Inworld::Client::SendTextMessage(const Inwor
 	return Packet;
 }
 
-std::shared_ptr<Inworld::DataEvent> Inworld::Client::SendSoundMessage(const Inworld::Routing& Routing, const std::string& Data)
+void Inworld::Client::StartAudioSessionInConversation(
+    const std::string& ConversationId, const AudioSessionStartPayload& Payload)
 {
-	auto Packet = std::make_shared<AudioDataEvent>(Data, Routing);
-	SendPacket(Packet);
-#ifdef INWORLD_AUDIO_DUMP
-	if (bDumpAudio)
-		_AudioChunksToDump.PushBack(Data);
-#endif
-	return Packet;
+    StartAudioSession(Routing::Player2Conversation(ConversationId), Payload);
 }
 
-std::shared_ptr<Inworld::DataEvent> Inworld::Client::SendSoundMessageWithAEC(const Inworld::Routing& Routing, const std::vector<int16_t>& InputData, const std::vector<int16_t>& OutputData)
+void Inworld::Client::StopAudioSessionInConversation(
+    const std::string& ConversationId)
 {
-	std::vector<int16_t> FilteredData = _EchoFilter.FilterAudio(InputData, OutputData);
+    StopAudioSession(Routing::Player2Conversation(ConversationId));
+}
 
-	std::string Data;
-	Data.resize(FilteredData.size() * sizeof(int16_t));
-	std::memcpy((void*)Data.data(), (void*)FilteredData.data(), Data.size());
+void Inworld::Client::SendSoundMessage(const Inworld::Routing& Routing, const std::string& Data)
+{
+	SPEECH_PROCESSOR_CALL(SendSoundMessage(Routing, Data))
+}
 
-	return SendSoundMessage(Routing, Data);
+void Inworld::Client::SendSoundMessageWithAEC(const Inworld::Routing& Routing, const std::vector<int16_t>& InputData, const std::vector<int16_t>& OutputData)
+{
+	SPEECH_PROCESSOR_CALL(SendSoundMessageWithAEC(Routing, InputData, OutputData))
 }
 
 std::shared_ptr<Inworld::CustomEvent> Inworld::Client::SendCustomEvent(const Inworld::Routing& Routing, const std::string& Name, const std::unordered_map<std::string, std::string>& Params)
@@ -219,28 +208,24 @@ std::shared_ptr<Inworld::CustomEvent> Inworld::Client::SendCustomEvent(const Inw
 	return Packet;
 }
 
-std::shared_ptr<Inworld::ControlEvent> Inworld::Client::StartAudioSession(const Inworld::Routing& Routing, const AudioSessionStartPayload& Payload)
+void Inworld::Client::StartAudioSession(const Inworld::Routing& Routing, const AudioSessionStartPayload& Payload)
 {
-	auto Packet = std::make_shared<Inworld::ControlEventAudioSessionStart>(Routing, static_cast<ai::inworld::packets::AudioSessionStartPayload_MicrophoneMode>(Payload.MicMode));
-	SendPacket(Packet);
-	return Packet;
+	SPEECH_PROCESSOR_CALL(StartAudioSession(Routing, Payload))
 }
 
-std::shared_ptr<Inworld::ControlEvent> Inworld::Client::StopAudioSession(const Inworld::Routing& Routing)
+void Inworld::Client::StopAudioSession(const Inworld::Routing& Routing)
 {
-	auto Packet = std::make_shared<Inworld::ControlEvent>(ai::inworld::packets::ControlEvent_Action_AUDIO_SESSION_END, std::string{}, Routing);
-	SendPacket(Packet);
-	return Packet;
+	SPEECH_PROCESSOR_CALL(StopAudioSession(Routing))
 }
 
-std::shared_ptr<Inworld::ControlEvent> Inworld::Client::StartAudioSession(const std::string& AgentId, const AudioSessionStartPayload& Payload)
+void Inworld::Client::StartAudioSession(const std::string& AgentId, const AudioSessionStartPayload& Payload)
 {
-	return StartAudioSession(Inworld::Routing::Player2Agent(AgentId), Payload);
+	StartAudioSession(Inworld::Routing::Player2Agent(AgentId), Payload);
 }
 
-std::shared_ptr<Inworld::ControlEvent> Inworld::Client::StopAudioSession(const std::string& AgentId)
+void Inworld::Client::StopAudioSession(const std::string& AgentId)
 {
-	return StopAudioSession(Inworld::Routing::Player2Agent(AgentId));
+	StopAudioSession(Inworld::Routing::Player2Agent(AgentId));
 }
 
 std::shared_ptr<Inworld::TextEvent> Inworld::Client::SendTextMessage(const std::string& AgentId, const std::string& Text)
@@ -253,25 +238,25 @@ std::shared_ptr<Inworld::TextEvent> Inworld::Client::SendTextMessageToConversati
 	return SendTextMessage(Routing::Player2Conversation(ConversationId), Text);
 }
 
-std::shared_ptr<Inworld::DataEvent> Inworld::Client::SendSoundMessage(const std::string& AgentId, const std::string& Data)
+void Inworld::Client::SendSoundMessage(const std::string& AgentId, const std::string& Data)
 {
-	return SendSoundMessage(Routing::Player2Agent(AgentId), Data);
+	SPEECH_PROCESSOR_CALL(SendSoundMessage(Routing::Player2Agent(AgentId), Data))
 }
 
-std::shared_ptr<Inworld::DataEvent> Inworld::Client::SendSoundMessageToConversation(const std::string& ConversationId, const std::string& Data)
+void Inworld::Client::SendSoundMessageToConversation(const std::string& ConversationId, const std::string& Data)
 {
-	return SendSoundMessage(Routing::Player2Conversation(ConversationId), Data);
+	SPEECH_PROCESSOR_CALL(SendSoundMessage(Routing::Player2Conversation(ConversationId), Data))
 }
 
-std::shared_ptr<Inworld::DataEvent> Inworld::Client::SendSoundMessageWithAEC(const std::string& AgentId, const std::vector<int16_t>& InputData, const std::vector<int16_t>& OutputData)
+void Inworld::Client::SendSoundMessageWithAEC(const std::string& AgentId, const std::vector<int16_t>& InputData, const std::vector<int16_t>& OutputData)
 {
-	return SendSoundMessageWithAEC(Routing::Player2Agent(AgentId), InputData, OutputData);
+	SPEECH_PROCESSOR_CALL(SendSoundMessageWithAEC(Routing::Player2Agent(AgentId), InputData, OutputData))
 }
 
-std::shared_ptr<Inworld::DataEvent> Inworld::Client::SendSoundMessageWithAECToConversation(
+void Inworld::Client::SendSoundMessageWithAECToConversation(
 	const std::string& ConversationId, const std::vector<int16_t>& InputData, const std::vector<int16_t>& OutputData)
 {
-	return SendSoundMessageWithAEC(Routing::Player2Conversation(ConversationId), InputData, OutputData);
+	SPEECH_PROCESSOR_CALL(SendSoundMessageWithAEC(Routing::Player2Conversation(ConversationId), InputData, OutputData))
 }
 
 std::shared_ptr<Inworld::CustomEvent> Inworld::Client::SendCustomEvent(const std::string& AgentId, const std::string& Name, const std::unordered_map<std::string, std::string>& Params)
@@ -306,16 +291,34 @@ std::shared_ptr<Inworld::CancelResponseEvent> Inworld::Client::CancelResponse(co
 	return Packet;
 }
 
-std::shared_ptr<Inworld::ControlEvent> Inworld::Client::StartAudioSessionInConversation(
-	const std::string& ConversationId, const AudioSessionStartPayload& Payload)
+void Inworld::Client::CreateOrUpdateItems(const std::vector<Inworld::CreateOrUpdateItemsOperationEvent::EntityItem>& Items, const std::vector<std::string>& AddToEntities)
 {
-	return StartAudioSession(Routing::Player2Conversation(ConversationId), Payload);
+	auto Packet = std::make_shared<Inworld::CreateOrUpdateItemsOperationEvent>(Items, AddToEntities);
+	SendPacket(Packet);
 }
 
-std::shared_ptr<Inworld::ControlEvent> Inworld::Client::StopAudioSessionInConversation(
-	const std::string& ConversationId)
+void Inworld::Client::RemoveItems(const std::vector<std::string>& ItemIds)
 {
-	return StopAudioSession(Routing::Player2Conversation(ConversationId));
+	auto Packet = std::make_shared<Inworld::RemoveItemsOperationEvent>(ItemIds);
+	SendPacket(Packet);
+}
+
+void Inworld::Client::AddItemsInEntities(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+{
+	auto Packet = std::make_shared<Inworld::AddItemsInEntitiesOperationEvent>(ItemIds, EntityNames);
+	SendPacket(Packet);
+}
+
+void Inworld::Client::RemoveItemsInEntities(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+{
+	auto Packet = std::make_shared<Inworld::RemoveItemsInEntitiesOperationEvent>(ItemIds, EntityNames);
+	SendPacket(Packet);
+}
+
+void Inworld::Client::ReplaceItemsInEntities(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+{
+	auto Packet = std::make_shared<Inworld::ReplaceItemsInEntitiesOperationEvent>(ItemIds, EntityNames);
+	SendPacket(Packet);
 }
 
 void Inworld::Client::LoadScene(const std::string& Scene)
@@ -333,24 +336,6 @@ void Inworld::Client::UnloadCharacters(const std::vector<std::string>& Names)
 	ControlSession<SessionControlEvent_UnloadCharacters>({ Names });
 }
 
-void Inworld::Client::LoadSavedState(const std::string& SavedState)
-{
-	if (!SavedState.empty())
-	{
-		ControlSession<SessionControlEvent_SessionSave>({ SavedState });
-	}
-}
-
-void Inworld::Client::LoadCapabilities(const Capabilities& Capabilities)
-{
-	ControlSession<SessionControlEvent_Capabilities>(Capabilities);
-}
-
-void Inworld::Client::LoadUserConfiguration(const UserConfiguration& UserConfig)
-{
-	ControlSession<SessionControlEvent_UserConfiguration>(UserConfig);
-}
-
 std::shared_ptr<Inworld::CancelResponseEvent> Inworld::Client::CancelResponse(const std::string& AgentId, const std::string& InteractionId, const std::vector<std::string>& UtteranceIds)
 {
 	auto Packet = std::make_shared<Inworld::CancelResponseEvent>(
@@ -361,18 +346,14 @@ std::shared_ptr<Inworld::CancelResponseEvent> Inworld::Client::CancelResponse(co
 	return Packet;
 }
 
-void Inworld::Client::SetAudioDumpEnabled(bool bEnabled, const std::string& FileName)
+void Inworld::Client::EnableAudioDump(const std::string& FileName)
 {
-#ifdef INWORLD_AUDIO_DUMP
-	bDumpAudio = bEnabled;
-	_AudioDumpFileName = FileName;
-	_AsyncAudioDumper.Stop();
-	if (bDumpAudio)
-	{
-		_AsyncAudioDumper.Start("InworldAudioDumper", std::make_unique<RunnableAudioDumper>(_AudioChunksToDump, _AudioDumpFileName));
-		Inworld::Log("ASYNC audio dump STARTING");
-	}
-#endif
+    SPEECH_PROCESSOR_CALL(EnableAudioDump(FileName))
+}
+
+void Inworld::Client::DisableAudioDump()
+{
+    SPEECH_PROCESSOR_CALL(DisableAudioDump())
 }
 
 void Inworld::Client::InitClientAsync(const SdkInfo& SdkInfo, std::function<void(ConnectionState)> ConnectionStateCallback, std::function<void(std::shared_ptr<Inworld::Packet>)> PacketCallback)
@@ -479,6 +460,16 @@ void Inworld::Client::StartClient(const ClientOptions& Options, const SessionInf
 
 	_LatencyTracker.TrackAudioReplies(Options.Capabilities.Audio);
 
+    _ClientOptions.SpeechOptions.PacketCb = [this](const std::shared_ptr<Inworld::Packet>& Packet)
+    {
+        SendPacket(Packet);
+    };
+    _ClientOptions.SpeechOptions.VADImmediateCb = [this](bool bVoiceDetected)
+    {
+        _LatencyTracker.HandleVAD(bVoiceDetected);
+    };
+    _SpeechProcessor = _ClientOptions.SpeechOptions.CreateSpeechProcessor();
+
 	SetConnectionState(ConnectionState::Connecting);
 
 	if (!_SessionInfo.IsValid())
@@ -486,6 +477,7 @@ void Inworld::Client::StartClient(const ClientOptions& Options, const SessionInf
 		GenerateToken([this]()
 		{
 			StartSession();
+			LoadScene(_ClientOptions.SceneName);
 		});
 	}
 	else
@@ -501,9 +493,9 @@ void Inworld::Client::PauseClient()
 		return;
 	}
 
-	StopClientStream();
-
 	SetConnectionState(ConnectionState::Paused);
+
+	PauseClientStream();
 }
 
 void Inworld::Client::ResumeClient()
@@ -522,13 +514,13 @@ void Inworld::Client::ResumeClient()
 			if (_Service->Session())
 			{
 				_Service->Session()->SetToken(_SessionInfo.Token);
-				StartClientStream();
+				ResumeClientStream();
 			}
 		});
 	}
 	else
 	{
-		StartClientStream();
+		ResumeClientStream();
 	}
 }
 
@@ -540,28 +532,25 @@ void Inworld::Client::StopClient()
 	}
 
 	StopClientStream();
+    _SpeechProcessor.reset();
 	if (_Service->Session())
 	{
 		_Service->Session()->Cancel();
 	}
 	_AsyncGenerateTokenTask.Stop();
 	_AsyncGetSessionState.Stop();
-#ifdef INWORLD_AUDIO_DUMP
-	_AsyncAudioDumper.Stop();
-#endif
 	_ClientOptions = ClientOptions();
 	_SessionInfo = SessionInfo();
 	SetConnectionState(ConnectionState::Idle);
-	Inworld::LogClearSessionId();
 }
 
 void Inworld::Client::DestroyClient()
 {
-	StopClient();
 	_OnPacketCallback = nullptr;
 	_OnGenerateTokenCallback = nullptr;
 	_OnConnectionStateChangedCallback = nullptr;
 	_LatencyTracker.ClearCallback();
+	StopClient();
 	_Service.reset();
 }
 
@@ -578,7 +567,7 @@ std::string GetSessionName(const std::string& SceneName, const std::string& Sess
 	return SceneName.substr(0, Pos) + "sessions/" + SessionId;
 }
 
-void Inworld::Client::SaveSessionStateAsync(std::function<void(std::string, bool)> Callback)
+void Inworld::Client::SaveSessionStateAsync(std::function<void(const std::string&, bool)> Callback)
 {
 	const std::string SessionName = GetSessionName(_ClientOptions.SceneName, _SessionInfo.SessionId);
 	if (SessionName.empty())
@@ -598,7 +587,7 @@ void Inworld::Client::SaveSessionStateAsync(std::function<void(std::string, bool
 			{
 				if (!Status.ok())
 				{
-					Inworld::LogError("Save session state FALURE! %s, Code: %d", Status.error_message().c_str(), (int32_t)Status.error_code());
+					Inworld::LogError("Save session state FALURE! %s, Code: %d, Session Id: %s", Status.error_message().c_str(), (int32_t)Status.error_code(), _SessionInfo.SessionId.c_str());
 					Callback({}, false);
 					return;
 				}
@@ -607,7 +596,7 @@ void Inworld::Client::SaveSessionStateAsync(std::function<void(std::string, bool
 		));
 }
 
-void Inworld::Client::SendFeedbackAsync(std::string& InteractionId, const InteractionFeedback& Feedback, std::function<void(std::string, bool)> Callback)
+void Inworld::Client::SendFeedbackAsync(std::string& InteractionId, const InteractionFeedback& Feedback, std::function<void(const std::string&, bool)> Callback)
 {
 	const std::string SessionName = GetSessionName(_ClientOptions.SceneName, _SessionInfo.SessionId);
 	if (SessionName.empty())
@@ -628,7 +617,7 @@ void Inworld::Client::SendFeedbackAsync(std::string& InteractionId, const Intera
 			{
 				if (!Status.ok())
 				{
-					Inworld::LogError("Send Feedback FALURE! %s, Code: %d", Status.error_message().c_str(), (int32_t)Status.error_code());
+					Inworld::LogError("Send Feedback FALURE! %s, Code: %d, Session Id: %s", Status.error_message().c_str(), (int32_t)Status.error_code(), _SessionInfo.SessionId.c_str());
 					if(Callback) Callback({}, false);
 					return;
 				}
@@ -673,7 +662,6 @@ void Inworld::Client::StartSession()
 		return;
 	}
 
-	Inworld::LogSetSessionId(_SessionInfo.SessionId);
 	Inworld::Log("Session Id: %s", _SessionInfo.SessionId.c_str());
 
 	_Service->Session() = std::make_unique<ServiceSession>(
@@ -703,21 +691,15 @@ void Inworld::Client::StartSession()
 		SdkDesc += _ClientOptions.ProjectName;
 	}
 
-	// order matters
-	LoadCapabilities(_ClientOptions.Capabilities);
-	if (!_ClientOptions.GameSessionId.empty())
-	{
-		ControlSession<SessionControlEvent_SessionConfiguration>({ _ClientOptions.GameSessionId });
-	}
-	ControlSession<SessionControlEvent_ClientConfiguration>(
-		{ 
-			_SdkInfo.Type,
-			_SdkInfo.Version,
-			SdkDesc,
-		});
-	LoadUserConfiguration(_ClientOptions.UserConfig);
-	LoadSavedState(_SessionInfo.SessionSavedState);
-	LoadScene(_ClientOptions.SceneName);
+	PushPacket(std::make_shared<ControlEventSessionConfiguration>(
+		ControlEventSessionConfiguration {
+			ControlEventSessionConfiguration::SessionConfiguration{_ClientOptions.GameSessionId},
+			_ClientOptions.Capabilities,
+			_ClientOptions.UserConfig,
+			ControlEventSessionConfiguration::ClientConfiguration{ _SdkInfo.Type, _SdkInfo.Version, SdkDesc },
+			ControlEventSessionConfiguration::Continuation{_SessionInfo.SessionSavedState}
+		}
+	));
 }
 
 void Inworld::Client::StartClientStream()
@@ -729,7 +711,26 @@ void Inworld::Client::StartClientStream()
 		_ErrorMessage = std::string();
 		_ErrorCode = grpc::StatusCode::OK;
 		_ErrorDetails = {};
-		_Service->OpenSession();
+		_Service->OpenSession(_ClientOptions.Metadata);
+		_bHasClientStreamFinished = false;
+		TryToStartReadTask();
+		TryToStartWriteTask();
+	}
+}
+
+void Inworld::Client::PauseClientStream()
+{
+	_bHasClientStreamFinished = true;
+}
+
+void Inworld::Client::ResumeClientStream()
+{
+	if (_ConnectionState == ConnectionState::Disconnected)
+	{
+		StartClientStream();
+	}
+	else
+	{
 		_bHasClientStreamFinished = false;
 		TryToStartReadTask();
 		TryToStartWriteTask();
@@ -795,7 +796,7 @@ void Inworld::Client::TryToStartReadTask()
 					_ErrorCode = Status.error_code();
 					_ErrorDetails = Status.error_details();
 					StopClientStream();
-					Inworld::LogError("Message READ failed: %s. Code: %d", _ErrorMessage.c_str(), _ErrorCode);
+					Inworld::LogError("Message READ failed: %s. Code: %d, Session Id: %s", _ErrorMessage.c_str(), _ErrorCode, _SessionInfo.SessionId.c_str());
 					SetConnectionState(ConnectionState::Disconnected);
 				}
 			)
@@ -835,7 +836,7 @@ void Inworld::Client::TryToStartWriteTask()
 						_ErrorCode = Status.error_code();
 						_ErrorDetails = Status.error_details();
 						StopClientStream();
-						Inworld::LogError("Message WRITE failed: %s. Code: %d", _ErrorMessage.c_str(), _ErrorCode);
+						Inworld::LogError("Message WRITE failed: %s. Code: %d, Session Id: %s", _ErrorMessage.c_str(), _ErrorCode, _SessionInfo.SessionId.c_str());
 						SetConnectionState(ConnectionState::Disconnected);
 					}
 				)

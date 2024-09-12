@@ -67,7 +67,7 @@ bool UInworldCharacter::CallRemoteFunction(UFunction* Function, void* Parms, FOu
 
 void UInworldCharacter::HandlePacket(const FInworldWrappedPacket& WrappedPacket)
 {
-	auto Packet = WrappedPacket.Packet;
+	auto& Packet = WrappedPacket.Packet;
 	if (Packet.IsValid())
 	{
 		Packet->Accept(*PacketVisitor);
@@ -121,12 +121,12 @@ void UInworldCharacter::SendNarrationEvent(const FString& Content)
 	Session->SendNarrationEvent(this, Content);
 }
 
-void UInworldCharacter::SendAudioSessionStart(UInworldPlayer* Player, EInworldMicrophoneMode MicrophoneMode/* = EInworldMicrophoneMode::OPEN_MIC*/)
+void UInworldCharacter::SendAudioSessionStart(UInworldPlayer* Player, FInworldAudioSessionOptions SessionOptions)
 {
 	NO_SESSION_RETURN(void())
 	EMPTY_ARG_RETURN(AgentInfo.AgentId, void())
 
-	Session->SendAudioSessionStart(this, Player, MicrophoneMode);
+	Session->SendAudioSessionStart(this, Player, SessionOptions);
 }
 
 void UInworldCharacter::SendAudioSessionStop()
@@ -272,6 +272,18 @@ void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldAudi
 	Character->OnInworldAudioEventDelegate.Broadcast(Event);
 }
 
+void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldA2FHeaderEvent& Event)
+{
+	Character->OnInworldA2FHeaderEventDelegateNative.Broadcast(Event);
+	Character->OnInworldA2FHeaderEventDelegate.Broadcast(Event);
+}
+
+void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldA2FContentEvent& Event)
+{
+	Character->OnInworldA2FContentEventDelegateNative.Broadcast(Event);
+	Character->OnInworldA2FContentEventDelegate.Broadcast(Event);
+}
+
 void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldSilenceEvent& Event)
 {
 	Character->OnInworldSilenceEventDelegateNative.Broadcast(Event);
@@ -294,17 +306,6 @@ void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldCust
 {
 	Character->OnInworldCustomEventDelegateNative.Broadcast(Event);
 	Character->OnInworldCustomEventDelegate.Broadcast(Event);
-}
-
-TArray<FString> Inworld::CharactersToAgentIds(const TArray<UInworldCharacter*>& InworldCharacters)
-{
-	TArray<FString> AgentIds = {};
-	AgentIds.Reserve(InworldCharacters.Num());
-	for (const UInworldCharacter* Character : InworldCharacters)
-	{
-		AgentIds.Add(Character->GetAgentInfo().AgentId);
-	}
-	return AgentIds;
 }
 
 #undef EMPTY_ARG_RETURN

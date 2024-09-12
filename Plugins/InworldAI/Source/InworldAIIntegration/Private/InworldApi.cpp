@@ -94,7 +94,7 @@ void UInworldApiSubsystem::StartSession(const FString& SceneName, const FString&
     Environment.AuthUrl = AuthUrlOverride;
     Environment.TargetUrl = TargetUrlOverride;
 
-    InworldSession->GetClient()->StartSession(SceneName, PlayerProfile, Auth, FInworldSave(), SessionToken, {});
+    InworldSession->StartSession(PlayerProfile, Auth, SceneName, FInworldSave(), SessionToken, {}, {}, {});
 }
 
 void UInworldApiSubsystem::StartSession_V2(const FString& SceneName, const FInworldPlayerProfile& PlayerProfile, const FInworldCapabilitySet& Capabilities, const FInworldAuth& Auth, const FInworldSessionToken& SessionToken, const FInworldEnvironment& Environment, FString UniqueUserIdOverride, FInworldSave SavedSessionState)
@@ -112,49 +112,49 @@ void UInworldApiSubsystem::StartSession_V2(const FString& SceneName, const FInwo
         UE_LOG(LogInworldAIIntegration, Warning, TEXT("Start Session, please provide unique PlayerProfile.ProjectName for possible troubleshooting"));
     }
 
-    InworldSession->GetClient()->StartSession(SceneName, PlayerProfile, Auth, SavedSessionState, SessionToken, Capabilities);
+    InworldSession->StartSession(PlayerProfile, Auth, SceneName, SavedSessionState, SessionToken, Capabilities, {}, {});
 }
 
 void UInworldApiSubsystem::PauseSession()
 {
     NO_CLIENT_RETURN(void())
 
-    InworldSession->GetClient()->PauseSession();
+    InworldSession->PauseSession();
 }
 
 void UInworldApiSubsystem::ResumeSession()
 {
     NO_CLIENT_RETURN(void())
 
-    InworldSession->GetClient()->ResumeSession();
+    InworldSession->ResumeSession();
 }
 
 void UInworldApiSubsystem::StopSession()
 {
     NO_CLIENT_RETURN(void())
 
-    InworldSession->GetClient()->StopSession();
+    InworldSession->StopSession();
 }
 
 void UInworldApiSubsystem::SaveSession(FOnInworldSessionSavedCallback Callback)
 {
     NO_CLIENT_RETURN(void())
 
-    InworldSession->GetClient()->SaveSession(Callback);
+    InworldSession->SaveSession(Callback);
 }
 
 void UInworldApiSubsystem::SetResponseLatencyTrackerDelegate(const FOnInworldPerceivedLatencyCallback& Delegate)
 {
     NO_CLIENT_RETURN(void())
 
-    InworldSession->GetClient()->OnPerceivedLatencyDelegate.Add(Delegate);
+    InworldSession->OnPerceivedLatencyDelegate.Add(Delegate);
 }
 
 void UInworldApiSubsystem::ClearResponseLatencyTrackerDelegate(const FOnInworldPerceivedLatencyCallback& Delegate)
 {
     NO_CLIENT_RETURN(void())
 
-    InworldSession->GetClient()->OnPerceivedLatencyDelegate.Remove(Delegate);
+    InworldSession->OnPerceivedLatencyDelegate.Remove(Delegate);
 }
 
 void UInworldApiSubsystem::LoadCharacters(const TArray<FString>& Names)
@@ -187,27 +187,6 @@ void UInworldApiSubsystem::UnloadCharacters(const TArray<FString>& Names)
         }
     }
 	InworldSession->UnloadCharacters(Characters);
-}
-
-void UInworldApiSubsystem::LoadSavedState(const FInworldSave& SavedState)
-{
-    NO_CLIENT_RETURN(void())
-
-    InworldSession->GetClient()->LoadSavedState(SavedState);
-}
-
-void UInworldApiSubsystem::LoadCapabilities(const FInworldCapabilitySet& Capabilities)
-{
-    NO_CLIENT_RETURN(void())
-
-    InworldSession->GetClient()->LoadCapabilities(Capabilities);
-}
-
-void UInworldApiSubsystem::LoadPlayerProfile(const FInworldPlayerProfile& PlayerProfile)
-{
-    NO_CLIENT_RETURN(void())
-
-    InworldSession->GetClient()->LoadPlayerProfile(PlayerProfile);
 }
 
 void UInworldApiSubsystem::SendTextMessage(const FString& AgentId, const FString& Text)
@@ -245,12 +224,12 @@ void UInworldApiSubsystem::SendAudioMessage(const FString& AgentId, const TArray
     InworldSession->GetClient()->SendSoundMessage(AgentId, InputData, OutputData);
 }
 
-void UInworldApiSubsystem::StartAudioSession(const FString& AgentId, UInworldPlayer* Player, EInworldMicrophoneMode MicrophoneMode/* = EInworldMicrophoneMode::OPEN_MIC*/)
+void UInworldApiSubsystem::StartAudioSession(const FString& AgentId, UInworldPlayer* Player, FInworldAudioSessionOptions SessionOptions)
 {
     NO_CLIENT_RETURN(void())
     EMPTY_ARG_RETURN(AgentId, void())
 
-    InworldSession->GetClient()->SendAudioSessionStart(AgentId, Cast<UObject>(Player), MicrophoneMode);
+    InworldSession->GetClient()->SendAudioSessionStart(AgentId, Cast<UObject>(Player), SessionOptions);
 }
 
 void UInworldApiSubsystem::StopAudioSession(const FString& AgentId)
@@ -266,7 +245,7 @@ void UInworldApiSubsystem::ChangeScene(const FString& SceneId)
     NO_CLIENT_RETURN(void())
     EMPTY_ARG_RETURN(SceneId, void())
 
-    InworldSession->GetClient()->SendChangeSceneEvent(SceneId);
+    InworldSession->SendChangeSceneEvent(SceneId);
 }
 
 EInworldConnectionState UInworldApiSubsystem::GetConnectionState() const

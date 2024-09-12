@@ -44,12 +44,24 @@ void Inworld::RunnableRead::Run()
 			{
 				Packet = std::make_shared<Inworld::AudioDataEvent>(IncomingPacket);
 			}
+			else if (IncomingPacket.data_chunk().type() == ai::inworld::packets::DataChunk_DataType_NVIDIA_A2F_ANIMATION_HEADER)
+			{
+				Packet = std::make_shared<Inworld::A2FHeaderEvent>(IncomingPacket);
+			}
+			else if (IncomingPacket.data_chunk().type() == ai::inworld::packets::DataChunk_DataType_NVIDIA_A2F_ANIMATION)
+			{
+				Packet = std::make_shared<Inworld::A2FContentEvent>(IncomingPacket);
+			}
 		}
 		else if (IncomingPacket.has_control())
 		{
 			if (IncomingPacket.control().has_conversation_event())
 			{
 				Packet = std::make_shared<Inworld::ControlEventConversationUpdate>(IncomingPacket);
+			}
+			else if (IncomingPacket.control().has_current_scene_status())
+			{
+				Packet = std::make_shared<Inworld::ControlEventCurrentSceneStatus>(IncomingPacket);
 			}
 			else
 			{
@@ -72,17 +84,6 @@ void Inworld::RunnableRead::Run()
 		{
 			Packet = std::make_shared<Inworld::RelationEvent>(IncomingPacket);
 		}
-		else if (IncomingPacket.has_session_control_response())
-		{
-			if (IncomingPacket.session_control_response().has_loaded_scene())
-			{
-				Packet = std::make_shared<Inworld::SessionControlResponse_LoadScene>(IncomingPacket);
-			}
-			else if (IncomingPacket.session_control_response().has_loaded_characters())
-			{
-				Packet = std::make_shared<Inworld::SessionControlResponse_LoadCharacters>(IncomingPacket);
-			}
-		}
 		else
 		{
 			// Unknown packet type
@@ -91,7 +92,10 @@ void Inworld::RunnableRead::Run()
 
 		_Packets.PushBack(Packet);
 
-		_ProcessedCallback(Packet);
+		if (!_HasReaderWriterFinished)
+		{
+			_ProcessedCallback(Packet);
+		}
 	}
 
 	_IsDone = true;
@@ -117,8 +121,10 @@ void Inworld::RunnableWrite::Run()
 		}
 
 		_Packets.PopFront();
-
-		_ProcessedCallback(Packet);
+		if (!_HasReaderWriterFinished)
+		{
+			_ProcessedCallback(Packet);
+		}
 	}
 
 	_IsDone = true;
@@ -139,8 +145,11 @@ void Inworld::RunnableAudioDumper::Run()
 			AudioDumper.OnMessage(Chunk);
 		}
 	}
+}
 
-	AudioDumper.OnSessionStop();
+void Inworld::RunnableAudioDumper::Deinitialize()
+{
+    AudioDumper.OnSessionStop();
 }
 #endif
 
@@ -158,9 +167,14 @@ grpc::Status Inworld::RunnableGenerateSessionToken::RunProcess()
 	return CreateStub()->GenerateToken(AuthCtx.get(), AuthRequest, &_Response);
 }
 
-std::unique_ptr<Inworld::ClientStream> Inworld::ServiceSession::OpenSession()
+std::unique_ptr<Inworld::ClientStream> Inworld::ServiceSession::OpenSession(const ClientHeaderData& Metadata)
 {
-	return CreateStub()->OpenSession(Context().get());
+	std::unique_ptr<ClientContext>& ClientContext = Context();
+	for (const auto& Data : Metadata)
+	{
+		ClientContext->AddMetadata(Data.first, Data.second);
+	}
+	return CreateStub()->OpenSession(ClientContext.get());
 }
 
 std::unique_ptr<ClientContext>& Inworld::ServiceSession::Context()

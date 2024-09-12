@@ -25,6 +25,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldTextEvent, const FInworldT
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInworldTextEventNative, const FInworldTextEvent& /*TextEvent*/);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldAudioEvent, const FInworldAudioDataEvent&, AudioEvent);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInworldAudioEventNative, const FInworldAudioDataEvent& /*AudioEvent*/);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldA2FHeaderEvent, const FInworldA2FHeaderEvent&, A2FHeaderEvent);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnInworldA2FHeaderEventNative, const FInworldA2FHeaderEvent& /*A2FHeaderEvent*/);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldA2FContentEvent, const FInworldA2FContentEvent&, A2FContentEvent);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnInworldA2FContentEventNative, const FInworldA2FContentEvent& /*A2FContentEvent*/);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldSilenceEvent, const FInworldSilenceEvent&, SilenceEvent);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInworldSilenceEventNative, const FInworldSilenceEvent& /*SilenceEvent*/);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldControlEvent, const FInworldControlEvent&, ControlEvent);
@@ -85,7 +89,8 @@ public:
 	const TArray<UInworldPlayer*>& GetRegisteredPlayers() const { return RegisteredPlayers; }
 
 	UFUNCTION(BlueprintCallable, Category = "Session", meta = (AdvancedDisplay = "4", AutoCreateRefTerm = "PlayerProfile, Auth, Save, SessionToken, CapabilitySet"))
-	void StartSession(const FString& SceneId, const FInworldPlayerProfile& PlayerProfile, const FInworldAuth& Auth, const FInworldSave& Save, const FInworldSessionToken& SessionToken, const FInworldCapabilitySet& CapabilitySet);
+	void StartSession(const FInworldPlayerProfile& PlayerProfile, const FInworldAuth& Auth, const FString& SceneId, const FInworldSave& Save,
+		const FInworldSessionToken& SessionToken, const FInworldCapabilitySet& CapabilitySet, const FInworldPlayerSpeechOptions& SpeechOptions, const TMap<FString, FString>& Metadata);
 	UFUNCTION(BlueprintCallable, Category = "Session")
 	void StopSession();
 	UFUNCTION(BlueprintCallable, Category = "Session")
@@ -111,12 +116,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Load|Character")
 	void UnloadCharacters(const TArray<UInworldCharacter*>& Characters);
 
-	UFUNCTION(BlueprintCallable, Category = "Load")
-	void LoadSavedState(const FInworldSave& Save);
-	UFUNCTION(BlueprintCallable, Category = "Load")
-	void LoadCapabilities(const FInworldCapabilitySet& CapabilitySet);
-	UFUNCTION(BlueprintCallable, Category = "Load")
-	void LoadPlayerProfile(const FInworldPlayerProfile& PlayerProfile);
+	UFUNCTION(BlueprintCallable, Category = "Conversation")
+	FString UpdateConversation(UInworldPlayer* Player);
 
 	UFUNCTION(BlueprintCallable, Category = "Message|Text")
 	void SendTextMessage(UInworldCharacter* Character, const FString& Message);
@@ -129,9 +130,9 @@ public:
 	void SendSoundMessageToConversation(UInworldPlayer* Player, const TArray<uint8>& InputData, const TArray<uint8>& OutputData);
 
 	UFUNCTION(BlueprintCallable, Category = "Message|Audio")
-	void SendAudioSessionStart(UInworldCharacter* Character, UInworldPlayer* Player, EInworldMicrophoneMode MicrophoneMode = EInworldMicrophoneMode::OPEN_MIC);
+	void SendAudioSessionStart(UInworldCharacter* Character, UInworldPlayer* Player, FInworldAudioSessionOptions SessionOptions);
 	UFUNCTION(BlueprintCallable, Category = "Message|Audio")
-	void SendAudioSessionStartToConversation(UInworldPlayer* Player, EInworldMicrophoneMode MicrophoneMode = EInworldMicrophoneMode::OPEN_MIC);
+	void SendAudioSessionStartToConversation(UInworldPlayer* Player, FInworldAudioSessionOptions SessionOptions);
 
 	UFUNCTION(BlueprintCallable, Category = "Message|Audio")
 	void SendAudioSessionStop(UInworldCharacter* Character);
@@ -151,6 +152,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Message|Mutation")
 	void CancelResponse(UInworldCharacter* Character, const FString& InteractionId, const TArray<FString>& UtteranceIds);
+
+	UPROPERTY(BlueprintAssignable, Category = "Connection")
+	FOnInworldSessionPrePause OnPrePauseDelegate;
+	FOnInworldSessionPrePauseNative& OnPrePause() { return OnPrePauseDelegateNative; }
+
+	UPROPERTY(BlueprintAssignable, Category = "Connection")
+	FOnInworldSessionPreStop OnPreStopDelegate;
+	FOnInworldSessionPreStopNative& OnPreStop() { return OnPreStopDelegateNative; }
 
 	UFUNCTION(BlueprintPure, Category = "Connection")
 	EInworldConnectionState GetConnectionState() const;
@@ -184,6 +193,8 @@ private:
 	UPROPERTY()
 	UInworldClient* Client;
 
+	FString Workspace;
+
 	UFUNCTION()
 	void OnRep_IsLoaded();
 
@@ -210,7 +221,10 @@ private:
 	TMap<FString, UInworldCharacter*> AgentIdToCharacter;
 	TMap<FString, FInworldAgentInfo> BrainNameToAgentInfo;
 	TMap<FString, TArray<FString>> ConversationIdToAgentIds;
+	TMap<FString, UInworldPlayer*> ConversationIdToPlayer;
 
+	FOnInworldSessionPrePauseNative OnPrePauseDelegateNative;
+	FOnInworldSessionPreStopNative OnPreStopDelegateNative;
 	FOnInworldConnectionStateChangedNative OnConnectionStateChangedDelegateNative;
 	FOnInworldSessionLoadedNative OnLoadedDelegateNative;
 	FOnInworldPerceivedLatencyNative OnPerceivedLatencyDelegateNative;
@@ -229,8 +243,7 @@ private:
 
 		virtual void Visit(const FInworldControlEvent& Event) override;
 		virtual void Visit(const FInworldConversationUpdateEvent& Event) override;
-		virtual void Visit(const FInworldLoadCharactersEvent& Event) override;
-		virtual void Visit(const FInworldChangeSceneEvent& Event) override;
+		virtual void Visit(const FInworldCurrentSceneStatusEvent& Event) override;
 
 	private:
 		UInworldSession* Session;

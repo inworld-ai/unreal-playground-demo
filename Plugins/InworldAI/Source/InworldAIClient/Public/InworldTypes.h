@@ -9,6 +9,7 @@
 
 
 #include "CoreMinimal.h"
+#include "InworldEnums.h"
 
 #include "InworldTypes.generated.h"
 
@@ -70,6 +71,12 @@ struct FInworldCapabilitySet
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Capability")
     bool MultiAgent = true;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Capability")
+    bool Audio2Face = false;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Capability")
+    bool MultiModalActionPlanning = false;
 };
 
 USTRUCT(BlueprintType)
@@ -154,4 +161,58 @@ struct FInworldConnectionErrorDetails
 
     UPROPERTY(BlueprintReadOnly, Category = "Agent")
     int32 MaxRetries = 0;
+};
+
+USTRUCT(BlueprintType)
+struct FInworldAudioSessionOptions
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Audio")
+	EInworldMicrophoneMode MicrophoneMode = EInworldMicrophoneMode::UNKNOWN;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Audio")
+	EInworldUnderstandingMode UnderstandingMode = EInworldUnderstandingMode::UNKNOWN;
+
+	bool operator==(const FInworldAudioSessionOptions& Other) const { return MicrophoneMode == Other.MicrophoneMode && UnderstandingMode == Other.UnderstandingMode; }
+	bool operator!=(const FInworldAudioSessionOptions& Other) const { return !(*this == Other); }
+
+	void Clear() { MicrophoneMode = EInworldMicrophoneMode::UNKNOWN; UnderstandingMode = EInworldUnderstandingMode::UNKNOWN; }
+
+	static FInworldAudioSessionOptions Default() { return { EInworldMicrophoneMode::OPEN_MIC, EInworldUnderstandingMode::FULL }; }
+};
+
+USTRUCT(BlueprintType)
+struct FInworldPlayerSpeechOptions
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Speech")
+	EInworldPlayerSpeechMode Mode = EInworldPlayerSpeechMode::VAD_DetectOnly;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Speech")
+	float VADProbThreshhold = 0.3f;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Speech")
+	uint8 VADBufferChunksNum = 5;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Speech")
+	uint8 VADSilenceChunksNum = 5;
+};
+
+USTRUCT(BlueprintType)
+struct FInworldEntityItem
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Entity")
+    FString Id;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Entity")
+    FString DisplayName;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Entity")
+    FString Description;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Entity")
+    TMap<FString, FString> Properties;
 };

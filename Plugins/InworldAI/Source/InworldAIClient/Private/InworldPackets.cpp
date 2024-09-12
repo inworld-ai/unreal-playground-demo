@@ -204,6 +204,14 @@ void FInworldVisemeInfo::Serialize(FMemoryArchive& Ar)
 	SerializeValue<float>(Ar, Timestamp);
 }
 
+void FInworldA2FHeaderEvent::AppendDebugString(FString& Str) const
+{
+}
+
+void FInworldA2FContentEvent::AppendDebugString(FString& Str) const
+{
+}
+
 void FInworldTextEvent::AppendDebugString(FString& Str) const
 {
 	AppendToDebugString(Str, TEXT("Text"));
@@ -235,6 +243,18 @@ void FInworldConversationUpdateEvent::AppendDebugString(FString& Str) const
 	}
 }
 
+void FInworldCurrentSceneStatusEvent::AppendDebugString(FString& Str) const
+{
+	AppendToDebugString(Str, TEXT("CurrentSceneStatus"));
+	AppendToDebugString(Str, SceneName);
+	AppendToDebugString(Str, SceneDescription);
+	AppendToDebugString(Str, SceneDisplayName);
+	for (auto& Agent : AgentInfos)
+	{
+		AppendToDebugString(Str, Agent.GivenName);
+	}
+}
+
 void FInworldEmotionEvent::AppendDebugString(FString& Str) const
 {
 	AppendToDebugString(Str, TEXT("Emotion"));
@@ -254,20 +274,6 @@ void FInworldCustomEvent::AppendDebugString(FString& Str) const
 	{
 		AppendToDebugString(Str, Param.Key + ":" + Param.Value);
 	}
-}
-
-void FInworldLoadCharactersEvent::AppendDebugString(FString& Str) const
-{
-	AppendToDebugString(Str, TEXT("LoadCharacters"));
-	for (auto& Agent : AgentInfos)
-	{
-		AppendToDebugString(Str, Agent.GivenName);
-	}
-}
-
-void FInworldChangeSceneEvent::AppendDebugString(FString& Str) const
-{
-	AppendToDebugString(Str, TEXT("ChangeScene"));
 }
 
 void FInworldRelationEvent::AppendDebugString(FString& Str) const

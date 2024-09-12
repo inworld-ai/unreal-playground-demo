@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "InworldAudioSender.h"
 #include "InworldEnums.h"
 #include "InworldTypes.h"
 #include "InworldPackets.h"
@@ -16,11 +15,19 @@
 #include "HAL/IConsoleManager.h"
 #endif
 
+#include <memory>
+
 #include "InworldClient.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldPacketReceived, const FInworldWrappedPacket&, WrappedPacket);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnInworldPacketReceivedCallback, const FInworldWrappedPacket&, WrappedPacket);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInworldPacketReceivedNative, const FInworldWrappedPacket& /*WrappedPacket*/);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInworldSessionPrePause);
+DECLARE_MULTICAST_DELEGATE(FOnInworldSessionPrePauseNative);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInworldSessionPreStop);
+DECLARE_MULTICAST_DELEGATE(FOnInworldSessionPreStopNative);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldConnectionStateChanged, EInworldConnectionState, ConnectionState);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnInworldConnectionStateChangedCallback, EInworldConnectionState, ConnectionState);
@@ -28,9 +35,25 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnInworldConnectionStateChangedNative, EInw
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInworldPerceivedLatency, FString, InteractionId, int32, LatencyMs);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnInworldPerceivedLatencyCallback, FString, InteractionId, int32, LatencyMs);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnInworldPerceivedLatencyNative, FString /*InteractionId*/, int32 /*ms*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnInworldPerceivedLatencyNative, FString /*InteractionId*/, int32 /*LatencyMs*/);
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnInworldSessionSavedCallback, FInworldSave, Save, bool, bSuccess);
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnInworldVADNative, UObject*, bool);
+
+namespace Inworld
+{
+	class Client;
+}
+
+class NDKClient
+{
+public:
+	NDKClient() = default;
+	virtual ~NDKClient() = default;
+
+	virtual Inworld::Client& Get() const = 0;
+};
 
 UCLASS(BlueprintType)
 class INWORLDAICLIENT_API UInworldClient : public UObject
@@ -42,7 +65,8 @@ public:
 	~UInworldClient();
 
 	UFUNCTION(BlueprintCallable, Category = "Session", meta = (AdvancedDisplay = "4", AutoCreateRefTerm = "PlayerProfile, Auth, Save, SessionToken, CapabilitySet"))
-	void StartSession(const FString& SceneId, const FInworldPlayerProfile& PlayerProfile, const FInworldAuth& Auth, const FInworldSave& Save, const FInworldSessionToken& SessionToken, const FInworldCapabilitySet& CapabilitySet);
+	void StartSession(const FInworldPlayerProfile& PlayerProfile, const FInworldAuth& Auth, const FString& SceneId, const FInworldSave& Save,
+		const FInworldSessionToken& SessionToken, const FInworldCapabilitySet& CapabilitySet, const FInworldPlayerSpeechOptions& SpeechOptions, const TMap<FString, FString>& Metadata);
 	UFUNCTION(BlueprintCallable, Category = "Session")
 	void StopSession();
 	UFUNCTION(BlueprintCallable, Category = "Session")
@@ -52,6 +76,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Session")
 	FString GetSessionId() const;
+
+	UFUNCTION(BlueprintPure, Category = "Session")
+	FInworldCapabilitySet GetCapabilities() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Session")
 	void SaveSession(FOnInworldSessionSavedCallback Callback);
@@ -68,13 +95,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Load|Character")
 	void UnloadCharacters(const TArray<FString>& Ids);
 
-	UFUNCTION(BlueprintCallable, Category = "Load")
-	void LoadSavedState(const FInworldSave& Save);
-	UFUNCTION(BlueprintCallable, Category = "Load")
-	void LoadCapabilities(const FInworldCapabilitySet& CapabilitySet);
-	UFUNCTION(BlueprintCallable, Category = "Load")
-	void LoadPlayerProfile(const FInworldPlayerProfile& PlayerProfile);
-
 	UFUNCTION(BlueprintCallable, Category = "Conversation")
 	FString UpdateConversation(const FString& ConversationId, const TArray<FString>& AgentIds, bool bIncludePlayer);
 
@@ -89,9 +109,9 @@ public:
 	void SendSoundMessageToConversation(const FString& ConversationId, const TArray<uint8>& InputData, const TArray<uint8>& OutputData);
 
 	UFUNCTION(BlueprintCallable, Category = "Message|Audio")
-	void SendAudioSessionStart(const FString& AgentId, UObject* Owner, EInworldMicrophoneMode MicrophoneMode = EInworldMicrophoneMode::OPEN_MIC);
+	void SendAudioSessionStart(const FString& AgentId, UObject* Owner, FInworldAudioSessionOptions SessionOptions);
 	UFUNCTION(BlueprintCallable, Category = "Message|Audio")
-	void SendAudioSessionStartToConversation(const FString& ConversationId, UObject* Owner, EInworldMicrophoneMode MicrophoneMode = EInworldMicrophoneMode::OPEN_MIC);
+	void SendAudioSessionStartToConversation(const FString& ConversationId, UObject* Owner, FInworldAudioSessionOptions SessionOptions);
 
 	UFUNCTION(BlueprintCallable, Category = "Message|Audio")
 	void SendAudioSessionStop(const FString& AgentId);
@@ -112,9 +132,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Message|Mutation")
 	void CancelResponse(const FString& AgentId, const FString& InteractionId, const TArray<FString>& UtteranceIds);
 
+	UFUNCTION(BlueprintCallable, Category = "Message|Entity")
+	void CreateOrUpdateItems(const TArray<FInworldEntityItem>& Items, const TArray<FString>& AddToEntities);
+
+	UFUNCTION(BlueprintCallable, Category = "Message|Entity")
+	void RemoveItems(const TArray<FString>& ItemIds);
+
+	UFUNCTION(BlueprintCallable, Category = "Message|Entity")
+	void AddItemsInEntities(const TArray<FString>& ItemIds, const TArray<FString>& EntityNames);
+
+	UFUNCTION(BlueprintCallable, Category = "Message|Entity")
+	void RemoveItemsInEntities(const TArray<FString>& ItemIds, const TArray<FString>& EntityNames);
+
+	UFUNCTION(BlueprintCallable, Category = "Message|Entity")
+	void ReplaceItemsInEntities(const TArray<FString>& ItemIds, const TArray<FString>& EntityNames);
+
 	UPROPERTY(BlueprintAssignable, Category = "Packet")
 	FOnInworldPacketReceived OnPacketReceivedDelegate;
 	FOnInworldPacketReceivedNative& OnPacketReceived() { return OnPacketReceivedDelegateNative; }
+
+	UPROPERTY(BlueprintAssignable, Category = "Connection")
+	FOnInworldSessionPrePause OnPrePauseDelegate;
+	FOnInworldSessionPrePauseNative& OnPrePause() { return OnPrePauseDelegateNative; }
+
+	UPROPERTY(BlueprintAssignable, Category = "Connection")
+	FOnInworldSessionPreStop OnPreStopDelegate;
+	FOnInworldSessionPreStopNative& OnPreStop() { return OnPreStopDelegateNative; }
 
 	UFUNCTION(BlueprintPure, Category = "Connection")
 	EInworldConnectionState GetConnectionState() const;
@@ -136,15 +179,15 @@ public:
 	FOnInworldVADNative& OnVAD() { return OnVADDelegateNative; }
 
 private:
-	UPROPERTY()
-	UInworldAudioSender* AudioSender;
-	
+	FOnInworldSessionPrePauseNative OnPrePauseDelegateNative;
+	FOnInworldSessionPreStopNative OnPreStopDelegateNative;
 	FOnInworldPacketReceivedNative OnPacketReceivedDelegateNative;
 	FOnInworldConnectionStateChangedNative OnConnectionStateChangedDelegateNative;
 	FOnInworldPerceivedLatencyNative OnPerceivedLatencyDelegateNative;
 	FOnInworldVADNative OnVADDelegateNative;
 
-	FDelegateHandle OnVADHandle;
+	UPROPERTY()
+	UObject* AudioSessionOwner = nullptr;
 
 	bool bIsBeingDestroyed = false;
 
@@ -157,4 +200,6 @@ private:
 #endif
 
 	FInworldEnvironment Environment;
+
+	TUniquePtr<NDKClient> Client;
 };

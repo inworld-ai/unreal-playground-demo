@@ -26,10 +26,17 @@ namespace ai { namespace inworld { namespace packets {
 	enum DataChunk_DataType : int;
 	enum ControlEvent_Action : int;
 	enum AudioSessionStartPayload_MicrophoneMode : int;
+	enum AudioSessionStartPayload_UnderstandingMode : int;
 	enum EmotionEvent_SpaffCode : int;
 	enum EmotionEvent_Strength : int;
 	enum Playback : int;
     enum ConversationEventPayload_ConversationEventType : int;
+	enum CustomEvent_Type : int;
+
+	namespace entities {
+		enum ItemsInEntitiesOperation_Type : int;
+	}
+
 }}}
 namespace InworldPackets = ai::inworld::packets;
 
@@ -48,9 +55,12 @@ namespace Inworld {
 		{}
 
         InworldPackets::Actor ToProto() const;
+
+	    bool operator==(const Actor& Other) const { return _Type == Other._Type && _Name == Other._Name; }
+	    bool operator!=(const Actor& Other) const { return !(*this == Other); }
         
 		// Is Actor player or agent.
-        InworldPackets::Actor_Type _Type = static_cast<InworldPackets::Actor_Type>(0);;
+        InworldPackets::Actor_Type _Type = static_cast<InworldPackets::Actor_Type>(0);
         // agent id if this is agent.
         std::string _Name;
 	};
@@ -69,8 +79,12 @@ namespace Inworld {
 			, _ConversationId(ConversationId) 
 		{}
 
+	    bool operator==(const Routing& Other) const { return _Source == Other._Source && _Target == Other._Target && _ConversationId == Other._ConversationId; }
+	    bool operator!=(const Routing& Other) const { return !(*this == Other); }
+
 		static Routing Player2Agent(const std::string& AgentId);
 		static Routing Player2Conversation(const std::string& ConversationId);
+		static Routing Player2World();
 
         InworldPackets::Routing ToProto() const;
         
@@ -104,17 +118,18 @@ namespace Inworld {
     class TextEvent;
     class DataEvent;
     class AudioDataEvent;
+	class A2FHeaderEvent;
+	class A2FContentEvent;
     class SilenceEvent;
     class ControlEvent;
 	class ControlEventConversationUpdate;
+	class ControlEventCurrentSceneStatus;
     class EmotionEvent;
     class CancelResponseEvent;
     class CustomGestureEvent;
     class CustomEvent;
 	class ActionEvent;
 	class RelationEvent;
-	class SessionControlResponse_LoadScene;
-	class SessionControlResponse_LoadCharacters;
 
     class INWORLD_EXPORT PacketVisitor
     {
@@ -122,17 +137,18 @@ namespace Inworld {
         virtual void Visit(const TextEvent& Event) {  }
         virtual void Visit(const DataEvent& Event) {  }
         virtual void Visit(const AudioDataEvent& Event) {  }
+		virtual void Visit(const A2FHeaderEvent& Event) {  }
+		virtual void Visit(const A2FContentEvent& Event) {  }
         virtual void Visit(const SilenceEvent& Event) {  }
         virtual void Visit(const ControlEvent& Event) {  }
         virtual void Visit(const ControlEventConversationUpdate& Event) {  }
+		virtual void Visit(const ControlEventCurrentSceneStatus& Event) {  }
         virtual void Visit(const EmotionEvent& Event) {  }
         virtual void Visit(const CancelResponseEvent& Event) {  }
         virtual void Visit(const CustomGestureEvent& Event) {  }
         virtual void Visit(const CustomEvent& Event) {  }
     	virtual void Visit(const ActionEvent& Event) { }
     	virtual void Visit(const RelationEvent& Event) { }
-    	virtual void Visit(const SessionControlResponse_LoadScene& Event) { }
-    	virtual void Visit(const SessionControlResponse_LoadCharacters& Event) { }
     };
 
 	struct EmotionalState;
@@ -235,6 +251,65 @@ namespace Inworld {
 		std::vector<PhonemeInfo> _PhonemeInfos;
 	};
 
+	class INWORLD_EXPORT A2FHeaderEvent : public Packet
+	{
+	public:
+		A2FHeaderEvent() = default;
+		A2FHeaderEvent(const InworldPackets::InworldPacket& GrpcPacket);
+
+		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
+
+		int32_t GetChannelCount() const { return _ChannelCount; }
+		int32_t GetSamplesPerSecond() const { return _SamplesPerSecond; }
+		int32_t GetBitsPerSample() const { return _BitsPerSample; }
+		const std::vector<std::string>& GetBlendShapes() const { return _BlendShapes; }
+
+	protected:
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override {}
+
+	private:
+		int32_t _ChannelCount = 0;
+		int32_t _SamplesPerSecond = 0;
+		int32_t _BitsPerSample = 0;
+		std::vector<std::string> _BlendShapes;
+	};
+
+	class INWORLD_EXPORT A2FContentEvent : public Packet
+	{
+	public:
+		A2FContentEvent() = default;
+		A2FContentEvent(const InworldPackets::InworldPacket& GrpcPacket);
+
+		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
+
+		struct FAudioInfo
+		{
+			double _TimeCode;
+			std::string _Audio;
+		};
+
+		struct FSkeletalAnim
+		{
+			struct FBlendShapeWeights
+			{
+				double _TimeCode;
+				std::vector<float> _Values;
+			};
+
+			std::vector<FBlendShapeWeights> _BlendShapeWeights;
+		};
+
+		const FAudioInfo& GetAudioInfo() const { return _AudioInfo; }
+		const FSkeletalAnim& GetSkeletalAnim() const { return _SkeletalAnimInfo; }
+
+	protected:
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override {}
+
+	private:
+		FAudioInfo _AudioInfo;
+		FSkeletalAnim _SkeletalAnimInfo;
+	};
+
 	class INWORLD_EXPORT SilenceEvent : public Packet
 	{
 	public:
@@ -280,18 +355,99 @@ namespace Inworld {
 		std::string _Description;
     };
 
+	class INWORLD_EXPORT ControlEventSessionConfiguration : public ControlEvent
+	{
+	public:
+		struct INWORLD_EXPORT SessionConfiguration
+		{
+			std::string Id;
+		};
+
+		struct INWORLD_EXPORT Capabilities
+		{
+			bool Animations = false;
+			bool Audio = false;
+			bool Emotions = false;
+			bool Interruptions = false;
+			bool EmotionStreaming = false;
+			bool SilenceEvents = false;
+			bool PhonemeInfo = false;
+			bool Continuation = true;
+			bool TurnBasedSTT = true;
+			bool NarratedActions = true;
+			bool Relations = true;
+			bool MultiAgent = true;
+			bool Audio2Face = false;
+			bool MultiModalActionPlanning = false;
+		};
+
+		struct INWORLD_EXPORT UserConfiguration
+		{
+			struct PlayerProfile
+			{
+				struct PlayerField
+				{
+					std::string Id;
+					std::string Value;
+				};
+
+				std::vector<PlayerField> Fields;
+			};
+
+			PlayerProfile Profile;
+
+			std::string Name;
+			std::string Id;
+		};
+
+		struct INWORLD_EXPORT ClientConfiguration
+		{
+			std::string Id;
+			std::string Version;
+			std::string Description;
+		};
+
+		struct INWORLD_EXPORT Continuation
+		{
+			std::string ExternallySavedState;
+		};
+
+	public:
+		ControlEventSessionConfiguration() = default;
+		ControlEventSessionConfiguration(
+			const SessionConfiguration& SessionConfiguration,
+			const Capabilities& Capabilities,
+			const UserConfiguration& UserConfiguration,
+			const ClientConfiguration& ClientConfiguration,
+			const Continuation& Continuation
+		);
+
+	protected:
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
+
+	private:
+		SessionConfiguration _SessionConfiguration;
+		Capabilities _Capabilities;
+		UserConfiguration _UserConfiguration;
+		ClientConfiguration _ClientConfiguration;
+		Continuation _Continuation;
+	};
+
 	class INWORLD_EXPORT ControlEventAudioSessionStart : public ControlEvent
 	{
 	public:
 		ControlEventAudioSessionStart() = default;
 		ControlEventAudioSessionStart(const InworldPackets::InworldPacket& GrpcPacket);
-		ControlEventAudioSessionStart(const Routing& Routing, InworldPackets::AudioSessionStartPayload_MicrophoneMode MicrophoneMode);
+		ControlEventAudioSessionStart(const Routing& Routing,
+		    InworldPackets::AudioSessionStartPayload_MicrophoneMode MicrophoneMode,
+		    InworldPackets::AudioSessionStartPayload_UnderstandingMode UnderstandingMode);
 
 	protected:
 		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
 
 	private:
 		InworldPackets::AudioSessionStartPayload_MicrophoneMode _MicrophoneMode;
+		InworldPackets::AudioSessionStartPayload_UnderstandingMode _UnderstandingMode;
 	};
 
     class INWORLD_EXPORT ControlEventConversationUpdate : public ControlEvent
@@ -315,6 +471,28 @@ namespace Inworld {
         bool _bIncludePlayer;
         InworldPackets::ConversationEventPayload_ConversationEventType _EventType;
     };
+
+	class INWORLD_EXPORT ControlEventCurrentSceneStatus : public ControlEvent
+	{
+	public:
+		ControlEventCurrentSceneStatus() = default;
+		ControlEventCurrentSceneStatus(const InworldPackets::InworldPacket& GrpcPacket);
+
+		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
+
+		const std::string& GetSceneName() const { return _SceneName; }
+		const std::string& GetSceneDescription() const { return _SceneDescription; }
+		const std::string& GetSceneDisplayName() const { return _SceneDisplayName; }
+
+		const std::vector<AgentInfo>& GetAgentInfos() const { return _AgentInfos; }
+
+	private:
+		std::string _SceneName;
+		std::string _SceneDescription;
+		std::string _SceneDisplayName;
+
+		std::vector<AgentInfo> _AgentInfos;
+	};
 
     class INWORLD_EXPORT EmotionEvent : public Packet
     {
@@ -469,133 +647,6 @@ namespace Inworld {
 		SessionControlEvent();
 	};
 
-	class INWORLD_EXPORT SessionControlEvent_SessionConfiguration : public SessionControlEvent
-	{
-	public:
-		struct INWORLD_EXPORT Data
-		{
-			std::string Id;
-		};
-
-		SessionControlEvent_SessionConfiguration(const Data& Data)
-			: SessionControlEvent()
-			, _Data(Data)
-		{}
-
-	protected:
-		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
-
-	private:
-		Data _Data;
-	};
-
-	class INWORLD_EXPORT SessionControlEvent_Capabilities : public SessionControlEvent
-	{
-	public:
-		struct INWORLD_EXPORT Data
-		{
-			bool Animations = false;
-			bool Audio = false;
-			bool Emotions = false;
-			bool Interruptions = false;
-			bool EmotionStreaming = false;
-			bool SilenceEvents = false;
-			bool PhonemeInfo = false;
-			bool Continuation = true;
-			bool TurnBasedSTT = true;
-			bool NarratedActions = true;
-			bool Relations = true;
-			bool Multiagent = true;
-		};
-
-		SessionControlEvent_Capabilities(const Data& Data)
-			: SessionControlEvent()
-			, _Data(Data)
-		{}
-
-	protected:
-		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
-
-	private:
-		Data _Data;
-	};
-
-	class INWORLD_EXPORT SessionControlEvent_UserConfiguration : public SessionControlEvent
-	{
-	public:
-		struct INWORLD_EXPORT Data
-		{
-			struct PlayerProfile
-			{
-				struct PlayerField
-				{
-					std::string Id;
-					std::string Value;
-				};
-
-				std::vector<PlayerField> Fields;
-			};
-
-			PlayerProfile Profile;
-
-			std::string Name;
-			std::string Id;
-		};
-
-		SessionControlEvent_UserConfiguration(const Data& Data)
-			: SessionControlEvent()
-			, _Data(Data)
-		{}
-
-	protected:
-		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
-
-	private:
-		Data _Data;
-	};
-
-	class INWORLD_EXPORT SessionControlEvent_ClientConfiguration : public SessionControlEvent
-	{
-	public:
-		struct INWORLD_EXPORT Data
-		{
-			std::string Id;
-			std::string Version;
-			std::string Description;
-		};
-
-		SessionControlEvent_ClientConfiguration(const Data& Data)
-			: SessionControlEvent()
-			, _Data(Data)
-		{}
-
-	protected:
-		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
-
-	private:
-		Data _Data;
-	};
-
-	class INWORLD_EXPORT SessionControlEvent_SessionSave : public SessionControlEvent
-	{
-	public:
-		struct INWORLD_EXPORT Data
-		{
-			std::string Bytes;
-		};
-
-		SessionControlEvent_SessionSave(const Data& Data)
-			: SessionControlEvent()
-			, _Data(Data)
-		{}
-
-	protected:
-		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
-
-	private:
-		Data _Data;
-	};
-
 	class INWORLD_EXPORT SessionControlEvent_LoadScene : public SessionControlEvent
 	{
 	public:
@@ -656,29 +707,106 @@ namespace Inworld {
 		Data _Data;
 	};
 
-	class INWORLD_EXPORT SessionControlResponse_LoadScene : public Packet
+	class INWORLD_EXPORT EntitiesItemsOperationEvent : public Packet
 	{
 	public:
-		SessionControlResponse_LoadScene(const InworldPackets::InworldPacket& GrpcPacket);
+		EntitiesItemsOperationEvent()
+			: EntitiesItemsOperationEvent(Routing::Player2World())
+		{}
+		EntitiesItemsOperationEvent(const InworldPackets::InworldPacket& GrpcPacket)
+			: Packet(GrpcPacket)
+		{}
+		EntitiesItemsOperationEvent(const Routing& Routing)
+			: Packet(Routing)
+		{}
 
-		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
-
-		const std::vector<AgentInfo>& GetAgentInfos() const { return _AgentInfos; }
-
-	private:
-		std::vector<AgentInfo> _AgentInfos;
+	protected:
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const = 0;
 	};
 
-	class INWORLD_EXPORT SessionControlResponse_LoadCharacters : public Packet
+	class INWORLD_EXPORT CreateOrUpdateItemsOperationEvent : public EntitiesItemsOperationEvent
 	{
 	public:
-		SessionControlResponse_LoadCharacters(const InworldPackets::InworldPacket& GrpcPacket);
+		struct INWORLD_EXPORT EntityItem
+		{
+			std::string Id;
+			std::string DisplayName;
+			std::string Description;
+			std::unordered_map<std::string, std::string> Properties;
+		};
 
-		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
+		CreateOrUpdateItemsOperationEvent(const std::vector<EntityItem>& Items, const std::vector<std::string>& AddToEntities)
+			: EntitiesItemsOperationEvent()
+			, _Items(Items)
+			, _AddToEntities(AddToEntities)
+		{}
 
-		const std::vector<AgentInfo>& GetAgentInfos() const { return _AgentInfos; }
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const;
 
 	private:
-		std::vector<AgentInfo> _AgentInfos;
+		std::vector<EntityItem> _Items;
+		std::vector<std::string> _AddToEntities;
+	};
+
+	class INWORLD_EXPORT RemoveItemsOperationEvent : public EntitiesItemsOperationEvent
+	{
+	public:
+		RemoveItemsOperationEvent(const std::vector<std::string>& ItemIds)
+			: EntitiesItemsOperationEvent()
+			, _ItemIds(ItemIds)
+		{}
+
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const;
+
+	private:
+		std::vector<std::string> _ItemIds;
+	};
+
+	class INWORLD_EXPORT ItemsInEntitiesOperationEvent : public EntitiesItemsOperationEvent
+	{
+	public:
+		ItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+			: EntitiesItemsOperationEvent()
+			, _ItemIds(ItemIds)
+			, _EntityNames(EntityNames)
+		{}
+
+		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const = 0;
+
+		virtual void ToProtoInternal(InworldPackets::InworldPacket & Proto) const override;
+
+	private:
+		std::vector<std::string> _ItemIds;
+		std::vector<std::string> _EntityNames;
+	};
+
+	class INWORLD_EXPORT AddItemsInEntitiesOperationEvent : public ItemsInEntitiesOperationEvent
+	{
+	public:
+		AddItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+			: ItemsInEntitiesOperationEvent(ItemIds, EntityNames)
+		{}
+
+		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const override;
+	};
+
+	class INWORLD_EXPORT RemoveItemsInEntitiesOperationEvent : public ItemsInEntitiesOperationEvent
+	{
+	public:
+		RemoveItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+			: ItemsInEntitiesOperationEvent(ItemIds, EntityNames)
+		{}
+
+		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const override;
+	};
+
+	class INWORLD_EXPORT ReplaceItemsInEntitiesOperationEvent : public ItemsInEntitiesOperationEvent
+	{
+	public:
+		ReplaceItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+			: ItemsInEntitiesOperationEvent(ItemIds, EntityNames)
+		{}
+
+		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const override;
 	};
 }

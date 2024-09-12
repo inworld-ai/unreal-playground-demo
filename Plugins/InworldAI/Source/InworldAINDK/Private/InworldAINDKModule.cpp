@@ -31,6 +31,14 @@ void FInworldAINDKModule::StartupModule()
 #ifdef INWORLD_AEC
 	LoadDll(LibraryPath, &webrtcLibraryHandle);
 #endif //INWORLD_AEC
+
+#ifdef INWORLD_VAD
+#if PLATFORM_WINDOWS
+	LoadDll(FPaths::Combine(*DllDirectory, TEXT("Win64/inworld-ndk-vad.dll")), &vadLibHandle);
+#elif PLATFORM_MAC
+	LoadDll(FPaths::Combine(*DllDirectory, TEXT("Mac/libinworld-ndk-vad.dylib")), &vadLibHandle);
+#endif
+#endif
 	
 #ifdef INWORLD_NDK_SHARED
 #if PLATFORM_WINDOWS
@@ -43,10 +51,6 @@ void FInworldAINDKModule::StartupModule()
 	LibraryPath = FPaths::Combine(*DllDirectory, TEXT("Android/arm64-v8a/libinworld-ndk.so"));
 #endif
 	LoadDll(LibraryPath, &ndkLibraryHandle);
-#endif
-
-#if PLATFORM_WINDOWS
-	LoadDll(FPaths::Combine(*DllDirectory, TEXT("Win64/inworld-ndk-vad.dll")), &vadLibHandle);
 #endif
 }
 
@@ -62,7 +66,9 @@ void FInworldAINDKModule::ShutdownModule()
 #endif // INWORLD_NDK_SHARED
 	ndkLibraryHandle = nullptr;
 
+#ifdef INWORLD_VAD
 	FPlatformProcess::FreeDllHandle(vadLibHandle);
+#endif
 	vadLibHandle = nullptr;
 }
 

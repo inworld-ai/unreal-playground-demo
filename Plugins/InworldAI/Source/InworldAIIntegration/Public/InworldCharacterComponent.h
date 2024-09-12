@@ -69,6 +69,10 @@ public:
 	FOnInworldCharacterUtterance OnUtterance;
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers|Utterance")
 	FOnInworldCharacterUtterance OnUtteranceInterrupt;
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers|Utterance")
+	FOnInworldCharacterUtterance OnUtterancePause;
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers|Utterance")
+	FOnInworldCharacterUtterance OnUtteranceResume;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldCharacterSilence, const FCharacterMessageSilence&, Silence);
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers|Silence")
@@ -129,27 +133,29 @@ public:
 	void SendNarrationEvent(const FString& Content);
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	void StartAudioSession(UInworldPlayer* Player, EInworldMicrophoneMode MicrophoneMode = EInworldMicrophoneMode::OPEN_MIC);
+	void StartAudioSession(UInworldPlayer* Player, FInworldAudioSessionOptions SessionOptions);
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void StopAudioSession();
 
-    UFUNCTION(BlueprintCallable, Category = "Interaction")
-	void CancelCurrentInteraction();
-
 	UFUNCTION(BlueprintPure, Category = "Interaction")
 	FVector GetTargetPlayerCameraLocation();
 
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void Interrupt();
+
+	void Interrupt(const FString& InteractionId);
+
 	const TSharedPtr<FCharacterMessage> GetCurrentMessage() const
 	{ 
-		return MessageQueue->CurrentMessage;
+		return MessageQueue->CurrentMessageQueueEntry ? MessageQueue->CurrentMessageQueueEntry->GetCharacterMessage() : nullptr;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Message")
-	void MakeMessageQueueLock(UPARAM(ref) FInworldCharacterMessageQueueLockHandle& Handle);
+	bool LockMessageQueue(UPARAM(ref) FInworldCharacterMessageQueueLockHandle& Handle) { return MessageQueue->Lock(Handle); }
 
 	UFUNCTION(BlueprintCallable, Category = "Message")
-	static void ClearMessageQueueLock(UPARAM(ref) FInworldCharacterMessageQueueLockHandle& Handle);
+	void UnlockMessageQueue(UPARAM(ref) FInworldCharacterMessageQueueLockHandle& Handle) { MessageQueue->Unlock(Handle); }
 
 	template<class T>
 	T* GetPlaybackNative()
@@ -177,6 +183,10 @@ private:
 	void OnInworldTextEvent(const FInworldTextEvent& Event);
 	UFUNCTION()
 	void OnInworldAudioEvent(const FInworldAudioDataEvent& Event);
+	UFUNCTION()
+	void OnInworldA2FHeaderEvent(const FInworldA2FHeaderEvent& Event);
+	UFUNCTION()
+	void OnInworldA2FContentEvent(const FInworldA2FContentEvent& Event);
 	UFUNCTION()
 	void OnInworldSilenceEvent(const FInworldSilenceEvent& Event);
 	UFUNCTION()
@@ -211,10 +221,11 @@ private:
 	TArray<UInworldCharacterPlayback*> Playbacks;
 
 	TSharedRef<FCharacterMessageQueue> MessageQueue;
-	float TimeToForceQueue = 3.f;
 
 	virtual void Handle(const FCharacterMessageUtterance& Message) override;
 	virtual void Interrupt(const FCharacterMessageUtterance& Message) override;
+	virtual void Pause(const FCharacterMessageUtterance& Event) override;
+	virtual void Resume(const FCharacterMessageUtterance& Event) override;
 
 	virtual void Handle(const FCharacterMessageSilence& Message) override;
 	virtual void Interrupt(const FCharacterMessageSilence& Message) override;
@@ -222,6 +233,8 @@ private:
 	virtual void Handle(const FCharacterMessageTrigger& Message) override;
 
 	virtual void Handle(const FCharacterMessageInteractionEnd& Message) override;
+
+	TMap<FString, TArray<FString>> PendingCancelResponses;
 
     EInworldCharacterEmotionalBehavior EmotionalBehavior = EInworldCharacterEmotionalBehavior::NEUTRAL;
     EInworldCharacterEmotionStrength EmotionStrength = EInworldCharacterEmotionStrength::UNSPECIFIED;
