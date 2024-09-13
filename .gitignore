@@ -86,3 +86,6 @@ Content/Inworld/*
 
 # Mac
 .DS_Store
+
+# MetaHuman
+Content/MetaHumans/*
