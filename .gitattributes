@@ -4,3 +4,5 @@
 # Asset Files
 *.fbx filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
+# Binary Files
+*.pdb filter=lfs diff=lfs merge=lfs -text
