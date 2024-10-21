@@ -91,6 +91,7 @@ Content/MetaHumans/*
 
 # Inworld NDK libs
 !/Plugins/InworldAI/Source/ThirdParty/InworldAINDKLibrary/lib/Android/arm64-v8a/*.a
+!/Plugins/InworldAI/Source/ThirdParty/InworldAINDKLibrary/lib/Android/arm64-v8a/*.so
 !/Plugins/InworldAI/Source/ThirdParty/InworldAINDKLibrary/lib/iOS/*.a
 !/Plugins/InworldAI/Source/ThirdParty/InworldAINDKLibrary/lib/iOS/*.dylib
 !/Plugins/InworldAI/Source/ThirdParty/InworldAINDKLibrary/lib/Mac/*.a
