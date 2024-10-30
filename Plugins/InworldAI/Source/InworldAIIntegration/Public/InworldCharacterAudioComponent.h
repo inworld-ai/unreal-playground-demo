@@ -24,6 +24,7 @@ class INWORLDAIINTEGRATION_API UInworldCharacterAudioComponent : public UAudioCo
 	
 public:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInworldCharacterVisemeBlendsUpdated, const FInworldCharacterVisemeBlends&, VisemeBlends);
 	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
@@ -75,7 +76,7 @@ private:
 
 protected:
 	mutable FCriticalSection QueueLock;
-	TSharedPtr<FCharacterMessageUtteranceData> UtteranceData;
+	TSharedPtr<FCharacterMessageUtteranceDataAudio> UtteranceData;
 	int32 NumSoundDataBytesPlayed;
 	class USoundWaveProcedural* SoundStreaming;
 
