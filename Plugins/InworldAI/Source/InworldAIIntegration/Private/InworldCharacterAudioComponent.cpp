@@ -44,11 +44,32 @@ void UInworldCharacterAudioComponent::BeginPlay()
 	}
 }
 
+void UInworldCharacterAudioComponent::EndPlay(EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	SoundStreaming->OnSoundWaveProceduralUnderflow = {};
+	SoundStreaming = nullptr;
+
+	SetSound(nullptr);
+}
+
 void UInworldCharacterAudioComponent::OnCharacterUtterance(const FCharacterMessageUtterance& Message)
 {
 	FScopeLock ScopeLock(&QueueLock);
 
-	UtteranceData = Message.UtteranceData;
+	if (Message.UtteranceData->IsType<FCharacterMessageUtteranceDataInworld>())
+	{
+		UtteranceData = StaticCastSharedPtr<FCharacterMessageUtteranceDataInworld>(Message.UtteranceData);
+	}
+	else if (Message.UtteranceData->IsType<FCharacterMessageUtteranceDataA2F>())
+	{
+		UtteranceData = StaticCastSharedPtr<FCharacterMessageUtteranceDataA2F>(Message.UtteranceData);
+	}
+	else
+	{
+		return;
+	}
 
 	NumSoundDataBytesPlayed = 44;
 
@@ -111,12 +132,18 @@ void UInworldCharacterAudioComponent::GenerateData(USoundWaveProcedural* InProce
 	{
 		NumSoundDataBytesPlayed = 44;
 		SoundStreaming->ResetAudio();
-		AsyncTask(ENamedThreads::GameThread, [this]()
+
+		TWeakObjectPtr<UInworldCharacterAudioComponent> Self = this;
+		AsyncTask(ENamedThreads::GameThread, [Self]()
 			{
-				if (!GetOwner()->IsPendingKillPending())
+				if (!Self.IsValid())
 				{
-					FScopeLock ScopeLock(&QueueLock);
-					OnAudioFinished();
+					return;
+				}
+				if (!Self->GetOwner()->IsPendingKillPending())
+				{
+					FScopeLock ScopeLock(&Self->QueueLock);
+					Self->OnAudioFinished();
 				}
 			});
 	}
@@ -125,22 +152,28 @@ void UInworldCharacterAudioComponent::GenerateData(USoundWaveProcedural* InProce
 		const int NextSampleCount = FMath::Min(SamplesRequired, UtteranceData->SoundData.Num() - NumSoundDataBytesPlayed);
 		InProceduralWave->QueueAudio(UtteranceData->SoundData.GetData() + NumSoundDataBytesPlayed, NextSampleCount);
 		NumSoundDataBytesPlayed += NextSampleCount;
-		AsyncTask(ENamedThreads::GameThread, [this]()
+
+		TWeakObjectPtr<UInworldCharacterAudioComponent> Self = this;
+		AsyncTask(ENamedThreads::GameThread, [Self]()
 			{
-				if (!GetOwner()->IsPendingKillPending())
+				if (!Self.IsValid())
 				{
-					FScopeLock ScopeLock(&QueueLock);
-					if(!UtteranceData)
+					return;
+				}
+				if (!Self->GetOwner()->IsPendingKillPending())
+				{
+					FScopeLock ScopeLock(&Self->QueueLock);
+					if(!Self->UtteranceData)
 					{
 						return;
 					}
-					if (UtteranceData->IsType<FCharacterMessageUtteranceDataInworld>())
+					if (Self->UtteranceData->IsType<FCharacterMessageUtteranceDataInworld>())
 					{
-						UpdateInworldVisemeBlends();
+						Self->UpdateInworldVisemeBlends();
 					}
-					else if (UtteranceData->IsType<FCharacterMessageUtteranceDataA2F>())
+					else if (Self->UtteranceData->IsType<FCharacterMessageUtteranceDataA2F>())
 					{
-						UpdateA2FBlendShapes();
+						Self->UpdateA2FBlendShapes();
 					}
 				}
 			});
