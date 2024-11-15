@@ -5,6 +5,7 @@
  * that can be found in the LICENSE.md file or at https://www.inworld.ai/sdk-license
  */
 
+#ifdef INWORLD_WITH_NDK
 #include "InworldPacketTranslator.h"
 THIRD_PARTY_INCLUDES_START
 #include "Utils/Utils.h"
@@ -55,6 +56,13 @@ void InworldPacketTranslator::TranslateEvent<Inworld::TextEvent, FInworldTextEve
 	TranslateInworldPacket(Original, New);
 	New.Text = UTF8_TO_TCHAR(Original.GetText().c_str());
 	New.Final = Original.IsFinal();
+}
+
+template<>
+void InworldPacketTranslator::TranslateEvent<Inworld::VADEvent, FInworldVADEvent>(const Inworld::VADEvent& Original, FInworldVADEvent& New)
+{
+	TranslateInworldPacket(Original, New);
+	New.VoiceDetected = Original.IsVoiceDetected();
 }
 
 template<>
@@ -186,3 +194,5 @@ void InworldPacketTranslator::TranslateEvent<Inworld::RelationEvent, FInworldRel
 	New.Respect = Original.GetRespect();
 	New.Trust = Original.GetTrust();
 }
+
+#endif

@@ -56,7 +56,6 @@ namespace Inworld
 		std::string Subtype;
 		std::string Version;
 		std::string OS;
-
 		std::string Description;
 	};
 
@@ -66,9 +65,7 @@ namespace Inworld
 	{
 		Capabilities Capabilities;
 		UserConfiguration UserConfig;
-	    ClientSpeechOptions SpeechOptions;
 		std::string ServerUrl;
-		std::string SceneName;
 		std::string Resource;
 		std::string ApiKey;
 		std::string ApiSecret;
@@ -142,13 +139,15 @@ namespace Inworld
 			Reconnecting
 		};
 
-		Client() = default;
-		virtual ~Client() { DestroyClient(); }
+		Client();
+		virtual ~Client();
 
 #pragma region Lifetime
 		// callbacks will not be called on calling thread
 		void InitClientAsync(const SdkInfo& SdkInfo, std::function<void(ConnectionState)> ConnectionStateCallback, std::function<void(std::shared_ptr<Inworld::Packet>)> PacketCallback);
-		void StartClient(const ClientOptions& Options, const SessionInfo& Info);
+		void StartClientFromSceneId(const std::string& SceneId);
+		void StartClientFromSave(const SessionSave& Save);
+		void StartClientFromToken(const SessionToken& Info);
 		void PauseClient();
 		void ResumeClient();
 		void StopClient();
@@ -206,12 +205,27 @@ namespace Inworld
 		void LoadUserConfiguration(const UserConfiguration& UserConfig);
 		
 		// the callback is not called on calling thread for Async methods
-		void SaveSessionStateAsync(std::function<void(const std::string&, bool)> Callback);
+		void SaveSessionStateAsync(std::function<void(const SessionSave&, bool)> Callback);
 #pragma endregion
 
 		void SendFeedbackAsync(std::string& InteractionId, const InteractionFeedback& Feedback, std::function<void(const std::string&, bool)> Callback = nullptr);
 
 		void GenerateToken(std::function<void()> RefreshTokenCallback);
+
+	private:
+		template<class T, class U>
+		void InitSpeechProcessor(const T& Options);
+	public:
+		template<class T>
+		void InitSpeechProcessor(const T& Options);
+		template<>
+		void InitSpeechProcessor(const ClientSpeechOptions_Default& Options);
+		template<>
+		void InitSpeechProcessor(const ClientSpeechOptions_VAD_DetectOnly& Options);
+		template<>
+		void InitSpeechProcessor(const ClientSpeechOptions_VAD_DetectAndFilterAudio& Options);
+
+		void DestroySpeechProcessor();
 
 	    void EnableAudioDump(const std::string& FileName = "");
 	    void DisableAudioDump();
@@ -225,18 +239,20 @@ namespace Inworld
 			return _ErrorCode != 0;
 		}
 
-		void SetPerceivedLatencyTrackerCallback(PerceivedLatencyCallback Cb) { _LatencyTracker.SetCallback(Cb); }
-		void ClearPerceivedLatencyTrackerCallback() { _LatencyTracker.ClearCallback(); }
+		void SetPerceivedLatencyTrackerCallback(std::function<void(const std::string&, uint32_t)> PerceivedLatencyCallback) { _OnPerceivedLatencyCallback = PerceivedLatencyCallback; }
+		void ClearPerceivedLatencyTrackerCallback() { _OnPerceivedLatencyCallback = nullptr; }
 		
-		const SessionInfo& GetSessionInfo() const;
+		const SessionToken& GetSessionToken() const;
 		void SetOptions(const ClientOptions& options);	
 		const ClientOptions& GetOptions() const;
 
 		virtual void Visit(const ControlEventCurrentSceneStatus& Event) override;
+		virtual void Visit(const PingEvent& Event) override;
 
 	protected:
 		void SendPacket(std::shared_ptr<Inworld::Packet> Packet);
 		void PushPacket(std::shared_ptr<Inworld::Packet> Packet);
+		void RecvPacket(std::shared_ptr<Inworld::Packet> Packet);
 
 		void StartClientStream();
 		void PauseClientStream();
@@ -246,8 +262,10 @@ namespace Inworld
 
 		std::function<void(std::shared_ptr<Inworld::Packet>)> _OnPacketCallback;
 		ClientOptions _ClientOptions;
-		SessionInfo _SessionInfo;
+		std::string _SceneId;
+		SessionToken _SessionToken;
 		SdkInfo _SdkInfo;
+
 	private:
 		void StartSession();
 		void TryToStartReadTask();
@@ -262,6 +280,7 @@ namespace Inworld
 
 		std::function<void()> _OnGenerateTokenCallback;
 		std::function<void(ConnectionState)> _OnConnectionStateChangedCallback;
+		std::function<void(const std::string&, uint32_t)> _OnPerceivedLatencyCallback;
 
 		std::atomic<bool> _bHasClientStreamFinished = false;
 
