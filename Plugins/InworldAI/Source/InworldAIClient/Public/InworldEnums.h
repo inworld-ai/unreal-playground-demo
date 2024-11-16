@@ -97,6 +97,14 @@ enum class EInworldActorType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EInworldSceneType : uint8
+{
+	UNKNOWN = 0 UMETA(Hidden),
+	SCENE = 1 UMETA(DisplayName = "Scene"),
+	CHARACTER = 2 UMETA(DisplayName = "Character"),
+};
+
+UENUM(BlueprintType)
 enum class EInworldControlEventAction : uint8
 {
 	UNKNOWN = 0,
@@ -138,10 +146,7 @@ enum class EInworldUnderstandingMode : uint8
 UENUM(BlueprintType)
 enum class EInworldPlayerSpeechMode : uint8
 {
-	// no VAD
-	Default = 0,
-	// detect voice to send callbacks, but send all player audio
-	VAD_DetectOnly = 1 UMETA(DisplayName="VAD Continious Audio Send"),
-	// detect voice to send callbacks and send only voice audio
-	VAD_DetectAndSendAudio = 2 UMETA(DisplayName="VAD Conditional Audio Send"),
+	DEFAULT = 0 UMETA(DisplayName = "Default"),
+	VAD_DETECT_ONLY = 1 UMETA(DisplayName="VAD - Detect Only"),
+	VAD_DETECT_AND_FILTER = 2 UMETA(DisplayName="VAD - Detect and Filter"),
 };

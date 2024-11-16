@@ -9,6 +9,7 @@
 
 #include "InworldPackets.h"
 
+#ifdef INWORLD_WITH_NDK
 THIRD_PARTY_INCLUDES_START
 #include "Packets.h"
 THIRD_PARTY_INCLUDES_END
@@ -19,6 +20,7 @@ public:
 	virtual ~InworldPacketTranslator() = default;
 
 	virtual void Visit(const Inworld::TextEvent& Event) override { MakePacket<Inworld::TextEvent, FInworldTextEvent>(Event); }
+	virtual void Visit(const Inworld::VADEvent& Event) override { MakePacket<Inworld::VADEvent, FInworldVADEvent>(Event); }
 	virtual void Visit(const Inworld::DataEvent& Event) override { MakePacket<Inworld::DataEvent, FInworldDataEvent>(Event); }
 	virtual void Visit(const Inworld::AudioDataEvent& Event) override { MakePacket<Inworld::AudioDataEvent, FInworldAudioDataEvent>(Event); }
 	virtual void Visit(const Inworld::A2FHeaderEvent& Event) override { MakePacket<Inworld::A2FHeaderEvent, FInworldA2FHeaderEvent>(Event); }
@@ -52,3 +54,5 @@ protected:
 		Packet = NewPacket;
 	}
 };
+
+#endif

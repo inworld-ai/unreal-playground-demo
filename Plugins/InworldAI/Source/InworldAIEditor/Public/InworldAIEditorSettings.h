@@ -21,27 +21,42 @@ class INWORLDAIEDITOR_API UInworldAIEditorSettings : public UObject
 public:
 	UInworldAIEditorSettings(const FObjectInitializer& ObjectInitializer);
 
-	UPROPERTY(config, EditAnywhere, Category = "Inworld")
-	FString StudioAccessToken;
-
 public:
+	/**
+	 * The class of the main player component.
+	 */
 	UPROPERTY(config, EditAnywhere, Category = "Player")
 	TSubclassOf<UInworldPlayerComponent> InworldPlayerComponent;
 
+	/**
+	 * Other player components to include.
+	 */
 	UPROPERTY(config, EditAnywhere, Category = "Player")
 	TArray<TSubclassOf<UActorComponent>> OtherPlayerComponents;
 
 public:
+	/**
+	 * The class of the main character component.
+	 */
 	UPROPERTY(config, EditAnywhere, Category = "Character")
 	TSubclassOf<UInworldCharacterComponent> InworldCharacterComponent;
 
+	/**
+	 * Character playbacks to include.
+	 */
 	UPROPERTY(EditAnywhere, Category = "Character")
 	TArray<TSubclassOf<UInworldCharacterPlayback>> CharacterPlaybacks;
 
+	/**
+	 * Other character components to include.
+	 */
 	UPROPERTY(EditAnywhere, Category = "Character")
 	TArray<TSubclassOf<UActorComponent>> OtherCharacterComponents;
 
 public:
+	/**
+	 * The path to the Inworld Studio widget.
+	 */
 	UPROPERTY(config, VisibleAnywhere, Category = "Studio")
 	FSoftObjectPath InworldStudioWidget;
 };

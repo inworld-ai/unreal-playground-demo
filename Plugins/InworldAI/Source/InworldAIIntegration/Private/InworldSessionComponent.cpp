@@ -52,6 +52,7 @@ void UInworldSessionComponent::OnUnregister()
 
 	if (IsValid(InworldSession))
 	{
+		InworldSession->Destroy();
 #if ENGINE_MAJOR_VERSION == 5
 		InworldSession->MarkAsGarbage();
 #endif
@@ -94,12 +95,48 @@ bool UInworldSessionComponent::GetIsLoaded() const
 	return InworldSession->IsLoaded();
 }
 
-void UInworldSessionComponent::StartSession(const FString& SceneId, const FInworldSave& Save, const FInworldSessionToken& Token)
+void UInworldSessionComponent::StartSession(const FString& SceneId, const FInworldSave& Save, const FInworldToken& Token)
+{
+	if (!Token.Token.IsEmpty())
+	{
+		StartSessionFromToken(Token);
+	}
+	else if (!Save.State.IsEmpty())
+	{
+		if (Save.Scene.Name.IsEmpty())
+		{
+			StartSessionFromSave({ { EInworldSceneType::SCENE, SceneId }, Save.State });
+		}
+		else
+		{
+			StartSessionFromSave(Save);
+		}
+	}
+	else
+	{
+		StartSessionFromScene({ EInworldSceneType::SCENE, SceneId });
+	}
+}
+
+void UInworldSessionComponent::StartSessionFromScene(const FInworldScene& Scene)
 {
 	NO_CLIENT_RETURN(void())
 
-	InworldSession->GetClient()->SetEnvironment(Environment);
-	InworldSession->StartSession(PlayerProfile, Auth, SceneId, Save, Token, CapabilitySet, SpeechOptions, Metadata);
+	InworldSession->StartSessionFromScene(Scene, PlayerProfile, CapabilitySet, Metadata, Workspace, Auth);
+}
+
+void UInworldSessionComponent::StartSessionFromSave(const FInworldSave& Save)
+{
+	NO_CLIENT_RETURN(void())
+
+	InworldSession->StartSessionFromSave(Save, PlayerProfile, CapabilitySet, Metadata, Workspace, Auth);
+}
+
+void UInworldSessionComponent::StartSessionFromToken(const FInworldToken& Token)
+{
+	NO_CLIENT_RETURN(void())
+
+	InworldSession->StartSessionFromToken(Token, PlayerProfile, CapabilitySet, Metadata, Workspace, Auth);
 }
 
 void UInworldSessionComponent::StopSession()
@@ -121,6 +158,13 @@ void UInworldSessionComponent::ResumeSession()
 	NO_CLIENT_RETURN(void())
 
 	InworldSession->ResumeSession();
+}
+
+FInworldToken UInworldSessionComponent::GetSessionToken() const
+{
+	NO_SESSION_RETURN({})
+
+	return InworldSession->GetSessionToken();
 }
 
 FString UInworldSessionComponent::GetSessionId() const
@@ -155,7 +199,7 @@ void UInworldSessionComponent::SetCapabilitySet(const FInworldCapabilitySet& InC
 	if (World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE))
 	{
 		NO_SESSION_RETURN(void())
-
+		
 		const EInworldConnectionState ConnectionState = GetConnectionState();
 		if (ConnectionState == EInworldConnectionState::Connected)
 		{

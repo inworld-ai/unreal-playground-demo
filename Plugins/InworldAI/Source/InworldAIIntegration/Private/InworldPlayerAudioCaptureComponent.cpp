@@ -159,6 +159,8 @@ public:
 
 UInworldPlayerAudioCaptureComponent::UInworldPlayerAudioCaptureComponent(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
+    , AudioSessionOptions{ EInworldMicrophoneMode::OPEN_MIC, EInworldUnderstandingMode::FULL }
+    , PlayerSpeechMode{ EInworldPlayerSpeechMode::DEFAULT }
 {
     PrimaryComponentTick.bCanEverTick = true;
     PrimaryComponentTick.bTickEvenWhenPaused = true;
@@ -181,26 +183,30 @@ void UInworldPlayerAudioCaptureComponent::BeginPlay()
                     EvaluateVoiceCapture();
                 }
             );
-            OnSessionPrePause = InworldPlayer->GetSession()->OnPrePause().AddLambda(
+
+            UInworldSession* InworldSession = InworldPlayer->GetSession();
+
+            OnSessionPrePause = InworldSession->OnPrePause().AddLambda(
                 [this]()
                 {
                     bSessionPendingPause = true;
                     EvaluateVoiceCapture();
                 }
             );
-            OnSessionConnectionStateChanged = InworldPlayer->GetSession()->OnConnectionStateChanged().AddLambda(
+            OnSessionConnectionStateChanged = InworldSession->OnConnectionStateChanged().AddLambda(
                 [this](EInworldConnectionState ConnectionState) -> void
                 {
                     bSessionPendingPause = false;
                     EvaluateVoiceCapture();
                 }
             );
-            OnSessionLoaded = InworldPlayer->GetSession()->OnLoaded().AddLambda(
+            OnSessionLoaded = InworldSession->OnLoaded().AddLambda(
                 [this](bool bLoaded) -> void
                 {
                     EvaluateVoiceCapture();
                 }
             );
+            InworldSession->InitSpeechProcessor(PlayerSpeechMode, PlayerSpeechOptions);
         }
 
         PrimaryComponentTick.SetTickFunctionEnable(false);
@@ -260,10 +266,17 @@ void UInworldPlayerAudioCaptureComponent::EndPlay(const EEndPlayReason::Type End
 
     if (GetOwnerRole() == ROLE_Authority)
     {
-        InworldPlayer->OnConversationChanged().Remove(OnPlayerConversationChanged);
+        if (InworldPlayer.IsValid())
+        {
+            InworldPlayer->OnConversationChanged().Remove(OnPlayerConversationChanged);
 
-        InworldPlayer->GetSession()->OnConnectionStateChanged().Remove(OnSessionConnectionStateChanged);
-        InworldPlayer->GetSession()->OnLoaded().Remove(OnSessionLoaded);
+            UInworldSession* InworldSession = InworldPlayer->GetSession();
+
+            InworldSession->OnConnectionStateChanged().Remove(OnSessionConnectionStateChanged);
+            InworldSession->OnLoaded().Remove(OnSessionLoaded);
+
+            InworldSession->DestroySpeechProcessor();
+        }
     }
 
     Super::EndPlay(EndPlayReason);
@@ -324,7 +337,7 @@ void UInworldPlayerAudioCaptureComponent::EvaluateVoiceCapture()
             {
                 if (!InworldPlayer->HasAudioSession())
                 {
-                    InworldPlayer->SendAudioSessionStartToConversation(AudioSessionMode);
+                    InworldPlayer->SendAudioSessionStartToConversation(AudioSessionOptions);
                 }
             }
             else
@@ -342,9 +355,9 @@ void UInworldPlayerAudioCaptureComponent::EvaluateVoiceCapture()
                 Rep_ServerCapturingVoice();
             }
         }
-        else if (bShouldCaptureVoice && InworldPlayer->HasAudioSession() && bIsAudioSessionModeDirty)
+        else if (bShouldCaptureVoice && InworldPlayer->HasAudioSession() && bIsAudioSessionOptionsDirty)
         {
-            InworldPlayer->SendAudioSessionStartToConversation(AudioSessionMode);
+            InworldPlayer->SendAudioSessionStartToConversation(AudioSessionOptions);
             InworldPlayer->SendAudioSessionStopToConversation();
         }
     }
@@ -361,23 +374,23 @@ void UInworldPlayerAudioCaptureComponent::ServerSetMuted_Implementation(bool bIn
 
 void UInworldPlayerAudioCaptureComponent::ServerSetMicMode_Implementation(EInworldMicrophoneMode InMicMode)
 {
-    if (AudioSessionMode.MicrophoneMode != InMicMode)
+    if (AudioSessionOptions.MicrophoneMode != InMicMode)
     {
-        AudioSessionMode.MicrophoneMode = InMicMode;
-        bIsAudioSessionModeDirty = true;
+        AudioSessionOptions.MicrophoneMode = InMicMode;
+        bIsAudioSessionOptionsDirty = true;
         EvaluateVoiceCapture();
-        bIsAudioSessionModeDirty = false;
+        bIsAudioSessionOptionsDirty = false;
     }
 }
 
-void UInworldPlayerAudioCaptureComponent::ServerSetAudioSessionMode_Implementation(FInworldAudioSessionOptions InMode)
+void UInworldPlayerAudioCaptureComponent::ServerSetAudioSessionOptions_Implementation(FInworldAudioSessionOptions InAudioSessionOptions)
 {
-	if (AudioSessionMode != InMode)
+	if (AudioSessionOptions != InAudioSessionOptions)
 	{
-		AudioSessionMode = InMode;
-		bIsAudioSessionModeDirty = true;
+        AudioSessionOptions = InAudioSessionOptions;
+		bIsAudioSessionOptionsDirty = true;
 		EvaluateVoiceCapture();
-		bIsAudioSessionModeDirty = false;
+        bIsAudioSessionOptionsDirty = false;
 	}
 }
 

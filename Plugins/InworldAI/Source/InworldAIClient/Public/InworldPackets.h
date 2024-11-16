@@ -133,6 +133,7 @@ struct INWORLDAICLIENT_API FInworldPacketId
 };
 
 struct FInworldTextEvent;
+struct FInworldVADEvent;
 struct FInworldDataEvent;
 struct FInworldAudioDataEvent;
 struct FInworldA2FHeaderEvent;
@@ -151,6 +152,7 @@ class InworldPacketVisitor
 {
 public:
 	virtual void Visit(const FInworldTextEvent& Event) {  }
+	virtual void Visit(const FInworldVADEvent& Event) {  }
 	virtual void Visit(const FInworldDataEvent& Event) {  }
 	virtual void Visit(const FInworldAudioDataEvent& Event) {  }
 	virtual void Visit(const FInworldA2FHeaderEvent& Event) {  }
@@ -205,8 +207,23 @@ struct INWORLDAICLIENT_API FInworldPacket
 	UPROPERTY()
 	FInworldRouting Routing;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const PURE_VIRTUAL(FInworldPacket::AppendDebugString);
+};
+
+USTRUCT(BlueprintType)
+struct INWORLDAICLIENT_API FInworldVADEvent : public FInworldPacket
+{
+	GENERATED_BODY()
+
+	FInworldVADEvent() = default;
+	virtual ~FInworldVADEvent() = default;
+
+	virtual void Accept(InworldPacketVisitor& Visitor) override { Visitor.Visit(*this); }
+
+	UPROPERTY()
+	bool VoiceDetected = false;
+
+	virtual void AppendDebugString(FString& Str) const override;
 };
 
 USTRUCT(BlueprintType)
@@ -224,7 +241,6 @@ struct INWORLDAICLIENT_API FInworldTextEvent : public FInworldPacket
 	UPROPERTY()
 	bool Final = false;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -242,7 +258,6 @@ struct INWORLDAICLIENT_API FInworldDataEvent : public FInworldPacket
 
 	TArray<uint8> Chunk;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const;
 };
 
@@ -276,7 +291,6 @@ struct INWORLDAICLIENT_API FInworldAudioDataEvent : public FInworldDataEvent
 	TArray<FInworldVisemeInfo> VisemeInfos;
 	bool bFinal = true;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -295,7 +309,6 @@ struct INWORLDAICLIENT_API FInworldA2FHeaderEvent : public FInworldPacket
 	int32 BitsPerSample = 0;
 	TArray<FName> BlendShapes;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -330,7 +343,6 @@ struct INWORLDAICLIENT_API FInworldA2FContentEvent : public FInworldPacket
 	FInworldA2FAudioInfo AudioInfo;
 	FInworldA2FBlendShapeWeights BlendShapeWeights;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -347,7 +359,6 @@ struct INWORLDAICLIENT_API FInworldSilenceEvent : public FInworldPacket
 	UPROPERTY()
 	float Duration = 0.f;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -367,7 +378,6 @@ struct INWORLDAICLIENT_API FInworldControlEvent : public FInworldPacket
 	UPROPERTY()
 	FString Description;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -388,7 +398,6 @@ struct INWORLDAICLIENT_API FInworldConversationUpdateEvent : public FInworldCont
 	UPROPERTY()
 	bool bIncludePlayer;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -408,7 +417,6 @@ struct INWORLDAICLIENT_API FInworldCurrentSceneStatusEvent : public FInworldCont
 
 	TArray<FInworldAgentInfo> AgentInfos;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -427,7 +435,6 @@ struct INWORLDAICLIENT_API FInworldEmotionEvent : public FInworldPacket
 	UPROPERTY()
 	EInworldCharacterEmotionStrength Strength = EInworldCharacterEmotionStrength::NORMAL;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -447,7 +454,6 @@ struct INWORLDAICLIENT_API FInworldCustomEvent : public FInworldPacket
 	UPROPERTY()
 	FInworldReplicatedMapStruct Params;
 	
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };
 
@@ -476,6 +482,5 @@ struct INWORLDAICLIENT_API FInworldRelationEvent : public FInworldPacket
 	UPROPERTY()
 	int32 Trust = 0;
 
-protected:
 	virtual void AppendDebugString(FString& Str) const override;
 };

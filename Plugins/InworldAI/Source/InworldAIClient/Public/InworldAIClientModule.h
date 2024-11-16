@@ -7,31 +7,31 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FInworldAINDKModule : public IModuleInterface
+INWORLDAICLIENT_API DECLARE_LOG_CATEGORY_EXTERN(LogInworldAIClient, Log, All);
+
+class FInworldAIClientModule : public IModuleInterface
 {
 public:
-
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
 private:
-	void LoadDll(const FString& Path, void** Handle);
-	
 	void* ndkLibraryHandle;
 	void* webrtcLibraryHandle;
 	void* vadLibHandle;
 
 public:
-	static inline FInworldAINDKModule& Get()
+	static inline FInworldAIClientModule& Get()
 	{
-		return FModuleManager::LoadModuleChecked<FInworldAINDKModule>("InworldAINDK");
+		return FModuleManager::LoadModuleChecked<FInworldAIClientModule>("InworldAIClient");
 	}
 
 	static inline bool IsAvailable()
 	{
-		return FModuleManager::Get().IsModuleLoaded("InworldAINDK");
+		return FModuleManager::Get().IsModuleLoaded("InworldAIClient");
 	}
 };
