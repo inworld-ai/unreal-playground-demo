@@ -69,5 +69,8 @@
 			"Name": "HairStrands",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"Windows"
 	]
 }
