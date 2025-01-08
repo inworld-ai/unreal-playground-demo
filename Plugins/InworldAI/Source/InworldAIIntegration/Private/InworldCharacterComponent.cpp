@@ -36,19 +36,6 @@ UInworldCharacterComponent::UInworldCharacterComponent()
 #endif
 }
 
-void UInworldCharacterComponent::HandleTargetPlayerVoiceDetection(bool bVoiceDetected)
-{
-	if (bVoiceDetected)
-	{
-		MessageQueue->TryToPause();
-	}
-	else
-	{
-		MessageQueue->TryToResume();
-	}
-	OnVoiceDetection.Broadcast(bVoiceDetected);
-}
-
 void UInworldCharacterComponent::OnRegister()
 {
 	Super::OnRegister();
@@ -57,6 +44,7 @@ void UInworldCharacterComponent::OnRegister()
 	if (World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE) && World->GetNetMode() != NM_Client)
 	{
 		InworldCharacter = NewObject<UInworldCharacter>(this);
+		InworldCharacter->SetBrainName(BrainName);
 		OnRep_InworldCharacter();
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
 		AddReplicatedSubObject(InworldCharacter);
@@ -86,17 +74,25 @@ void UInworldCharacterComponent::InitializeComponent()
 {
     Super::InitializeComponent();
 	UWorld* World = GetWorld();
-	if (World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE) && World->GetNetMode() != NM_Client)
-	{
-		InworldCharacter->SetSession(World->GetSubsystem<UInworldApiSubsystem>()->GetInworldSession());
-	}
 
 #if WITH_EDITOR
-	if (GetWorld() == nullptr || !GetWorld()->IsPlayInEditor())
+	if (World == nullptr || !World->IsPlayInEditor())
 	{
 		return;
 	}
 #endif
+
+	if (World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE) && World->GetNetMode() != NM_Client)
+	{
+		if (InworldSessionOwner)
+		{
+			InworldCharacter->SetSession(IInworldSessionOwnerInterface::Execute_GetInworldSession(InworldSessionOwner));
+		}
+		else if (bFindSession)
+		{
+			InworldCharacter->SetSession(World->GetSubsystem<UInworldApiSubsystem>()->GetInworldSession());
+		}
+	}
 
     if (GetNetMode() != NM_DedicatedServer)
     {
@@ -117,17 +113,18 @@ void UInworldCharacterComponent::UninitializeComponent()
 	Super::UninitializeComponent();
 
 	UWorld* World = GetWorld();
-	if (World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE) && World->GetNetMode() != NM_Client)
-	{
-		InworldCharacter->SetSession(nullptr);
-	}
 
 #if WITH_EDITOR
-	if (GetWorld() == nullptr || !GetWorld()->IsPlayInEditor())
+	if (World == nullptr || !World->IsPlayInEditor())
 	{
 		return;
 	}
 #endif
+
+	if (World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE) && World->GetNetMode() != NM_Client)
+	{
+		InworldCharacter->SetSession(nullptr);
+	}
 
 	if (GetNetMode() != NM_DedicatedServer)
 	{
@@ -138,11 +135,6 @@ void UInworldCharacterComponent::UninitializeComponent()
 void UInworldCharacterComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		InworldCharacter->SetBrainName(BrainName);
-	}
 
     for (auto* Pb : Playbacks)
     {
@@ -295,11 +287,11 @@ void UInworldCharacterComponent::SendNarrationEvent(const FString& Content)
 	InworldCharacter->SendNarrationEvent(Content);
 }
 
-void UInworldCharacterComponent::StartAudioSession(UInworldPlayer* Player, FInworldAudioSessionOptions SessionOptions)
+void UInworldCharacterComponent::StartAudioSession(FInworldAudioSessionOptions SessionOptions)
 {
 	NO_CHARACTER_RETURN(void())
 
-	InworldCharacter->SendAudioSessionStart(Player, SessionOptions);
+	InworldCharacter->SendAudioSessionStart(SessionOptions);
 }
 
 void UInworldCharacterComponent::StopAudioSession()
@@ -339,7 +331,7 @@ bool IsAudioEnabled(UInworldSession* InworldSession)
 	return InworldClient->GetCapabilities().Audio;
 }
 
-void UInworldCharacterComponent::Multicast_VisitText_Implementation(const FInworldTextEvent& Event)
+void UInworldCharacterComponent::Multicast_VisitText_Implementation(const FInworldTextEvent& Event, bool bTextOnly)
 {
     if (GetNetMode() == NM_DedicatedServer)
     {
@@ -355,7 +347,7 @@ void UInworldCharacterComponent::Multicast_VisitText_Implementation(const FInwor
 		}
 
 		auto Message = MessageQueue->AddOrUpdateMessage<FCharacterMessageUtterance>(Event);
-		if (!IsAudioEnabled(InworldCharacter->GetSession()))
+		if (bTextOnly)
 		{
 			Message->UtteranceData = MakeShared<FCharacterMessageUtteranceData>();
 			MessageQueue->TryToProgress();
@@ -380,6 +372,24 @@ void UInworldCharacterComponent::Multicast_VisitText_Implementation(const FInwor
 			Interrupt(Event.PacketId.InteractionId);
 		}
 	}
+}
+
+void UInworldCharacterComponent::Multicast_VisitVAD_Implementation(const FInworldVADEvent& Event)
+{
+	if (GetNetMode() == NM_DedicatedServer)
+	{
+		return;
+	}
+	
+	if (Event.VoiceDetected)
+	{
+		MessageQueue->TryToPause();
+	}
+	else
+	{
+		MessageQueue->TryToResume();
+	}
+	OnVoiceDetection.Broadcast(Event.VoiceDetected);
 }
 
 void UInworldCharacterComponent::VisitAudioOnClient(const FInworldAudioDataEvent& Event)
@@ -455,15 +465,18 @@ void UInworldCharacterComponent::Multicast_VisitEmotion_Implementation(const FIn
 
 void UInworldCharacterComponent::OnInworldTextEvent(const FInworldTextEvent& Event)
 {
-    Multicast_VisitText(Event);
+    Multicast_VisitText(Event, !IsAudioEnabled(InworldCharacter->GetSession()));
+}
+
+void UInworldCharacterComponent::OnInworldVADEvent(const FInworldVADEvent& Event)
+{
+	Multicast_VisitVAD(Event);
 }
 
 bool IsA2FEnabled(UInworldSession* InworldSession)
 {
 	EMPTY_ARG_RETURN(InworldSession, false)
-	UInworldClient* InworldClient = InworldSession->GetClient();
-	EMPTY_ARG_RETURN(InworldClient, false)
-	return InworldClient->GetCapabilities().Audio2Face;
+	return InworldSession->GetCapabilities().Audio2Face;
 }
 
 void UInworldCharacterComponent::OnInworldAudioEvent(const FInworldAudioDataEvent& Event)
@@ -600,6 +613,7 @@ void UInworldCharacterComponent::OnRep_InworldCharacter()
 		OnPlayerInteractionStateChanged.Broadcast(InworldCharacter->GetTargetPlayer() != nullptr);
 
 		InworldCharacter->OnInworldTextEvent().AddUObject(this, &UInworldCharacterComponent::OnInworldTextEvent);
+		InworldCharacter->OnInworldVADEvent().AddUObject(this, &UInworldCharacterComponent::OnInworldVADEvent);
 		InworldCharacter->OnInworldAudioEvent().AddUObject(this, &UInworldCharacterComponent::OnInworldAudioEvent);
 		InworldCharacter->OnInworldA2FHeaderEvent().AddUObject(this, &UInworldCharacterComponent::OnInworldA2FHeaderEvent);
 		InworldCharacter->OnInworldA2FContentEvent().AddUObject(this, &UInworldCharacterComponent::OnInworldA2FContentEvent);

@@ -11,7 +11,7 @@
 #include "InworldSession.h"
 #include "InworldMacros.h"
 
-#include "InworldAIIntegrationModule.h"
+#include "InworldAIClientModule.h"
 
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/NetDriver.h"
@@ -19,7 +19,7 @@
 
 #include "Net/UnrealNetwork.h"
 
-#define EMPTY_ARG_RETURN(Arg, Return) INWORLD_WARN_AND_RETURN_EMPTY(LogInworldAIIntegration, UInworldPlayer, Arg, Return)
+#define EMPTY_ARG_RETURN(Arg, Return) INWORLD_WARN_AND_RETURN_EMPTY(LogInworldAIClient, UInworldPlayer, Arg, Return)
 #define NO_SESSION_RETURN(Return) EMPTY_ARG_RETURN(Session, Return)
 
 UInworldPlayer::UInworldPlayer()
@@ -82,14 +82,14 @@ void UInworldPlayer::SetSession(UInworldSession* InSession)
 		return;
 	}
 
-	if (Session)
+	if (Session.IsValid())
 	{
 		Session->UnregisterPlayer(this);
 	}
 
 	Session = InSession;
 
-	if (Session)
+	if (Session.IsValid())
 	{
 		Session->RegisterPlayer(this);
 	}
@@ -113,7 +113,7 @@ void UInworldPlayer::SendTriggerToConversation(const FString& Name, const TMap<F
 	Session->SendTriggerToConversation(this, Name, Params);
 }
 
-void UInworldPlayer::SendAudioSessionStartToConversation(FInworldAudioSessionOptions InAudioSessionMode)
+void UInworldPlayer::SendAudioSessionStartToConversation(FInworldAudioSessionOptions InAudioSessionOptions)
 {
 	NO_SESSION_RETURN(void())
 	EMPTY_ARG_RETURN(ConversationId, void())
@@ -124,8 +124,8 @@ void UInworldPlayer::SendAudioSessionStartToConversation(FInworldAudioSessionOpt
 	}
 	bHasAudioSession = true;
 
-	AudioSessionMode = InAudioSessionMode;
-	Session->SendAudioSessionStartToConversation(this, AudioSessionMode);
+	AudioSessionOptions = InAudioSessionOptions;
+	Session->SendAudioSessionStartToConversation(this, AudioSessionOptions);
 }
 
 void UInworldPlayer::SendAudioSessionStopToConversation()
@@ -139,7 +139,7 @@ void UInworldPlayer::SendAudioSessionStopToConversation()
 	}
 	bHasAudioSession = false;
 
-	AudioSessionMode.Clear();
+	AudioSessionOptions = {};
 	Session->SendAudioSessionStopToConversation(this);
 }
 
@@ -154,15 +154,6 @@ void UInworldPlayer::SendSoundMessageToConversation(const TArray<uint8>& Input, 
 		return;
 	}
 	Session->SendSoundMessageToConversation(this, Input, Output);
-}
-
-TScriptInterface<IInworldPlayerOwnerInterface> UInworldPlayer::GetInworldPlayerOwner()
-{
-	if (!ensureMsgf(GetOuter()->Implements<UInworldPlayerOwnerInterface>(), TEXT("UInworldPlayer outer must implement IInworldPlayerOwnerInterface!")))
-	{
-		return nullptr;
-	}
-	return TScriptInterface<IInworldPlayerOwnerInterface>(GetOuter());
 }
 
 void UInworldPlayer::SetConversationParticipation(bool bParticipate)
@@ -242,13 +233,6 @@ void UInworldPlayer::ClearAllTargetCharacters()
 	}
 }
 
-void UInworldPlayer::SetVoiceDetected(bool bVal)
-{
-	const bool bOldValue = bVoiceDetected;
-	bVoiceDetected = bVal;
-	OnRep_VoiceDetected(bOldValue);
-}
-
 void UInworldPlayer::OnRep_VoiceDetected(bool bOldValue)
 {
 	if (bVoiceDetected != bOldValue)
@@ -275,8 +259,15 @@ void UInworldPlayer::UpdateConversation()
 
 	if (bHadAudioSession && !ConversationId.IsEmpty())
 	{
-		SendAudioSessionStartToConversation(AudioSessionMode);
+		SendAudioSessionStartToConversation(AudioSessionOptions);
 	}
+}
+
+void UInworldPlayer::FInworldPlayerPacketVisitor::Visit(const FInworldVADEvent& Event)
+{
+	const bool bOldValue = Player->bVoiceDetected;
+	Player->bVoiceDetected = Event.VoiceDetected;
+	Player->OnRep_VoiceDetected(bOldValue);
 }
 
 void UInworldPlayer::FInworldPlayerPacketVisitor::Visit(const FInworldConversationUpdateEvent& Event)

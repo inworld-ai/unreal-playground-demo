@@ -9,11 +9,14 @@
 #include "ProtoDisableWarning.h"
 
 #include <random>
+#include <sstream>
+#include <regex>
 
 #include "Types.h"
 #include "Utils/Log.h"
 
 #include "google/protobuf/util/time_util.h"
+#include "google/protobuf/util/json_util.h"
 #include "ai/inworld/packets/packets.pb.h"
 #include "nvidia/a2f/nvidia_ace.controller.v1.pb.h"
 
@@ -86,7 +89,7 @@ namespace Inworld {
 	}
 
 	PacketId::PacketId(const InworldPackets::PacketId& Other)
-		: PacketId(Other.packet_id(), Other.utterance_id(), Other.interaction_id())
+		: PacketId(Other.packet_id(), Other.utterance_id(), Other.interaction_id(), Other.correlation_id())
 	{}
 
 	InworldPackets::PacketId PacketId::ToProto() const
@@ -95,6 +98,7 @@ namespace Inworld {
         proto.set_packet_id(_UID);
         proto.set_utterance_id(_UtteranceId);
         proto.set_interaction_id(_InteractionId);
+		proto.set_conversation_id(_CorrelationId);
         return proto;
     }
 
@@ -385,6 +389,13 @@ namespace Inworld {
 		MutableCapabilities->set_multi_agent(_Capabilities.MultiAgent);
 		MutableCapabilities->set_audio2face(_Capabilities.Audio2Face);
 		MutableCapabilities->set_multi_modal_action_planning(_Capabilities.MultiModalActionPlanning);
+		MutableCapabilities->set_ping_pong_report(_Capabilities.PingPongReport);
+		MutableCapabilities->set_perceived_latency_report(_Capabilities.PerceivedLatencyReport);
+		MutableCapabilities->set_logs(_Capabilities.Logs);
+		MutableCapabilities->set_logs_warning(_Capabilities.LogsWarning);
+		MutableCapabilities->set_logs_info(_Capabilities.LogsInfo);
+		MutableCapabilities->set_logs_debug(_Capabilities.LogsDebug);
+		MutableCapabilities->set_logs_internal(_Capabilities.LogsInternal);
 
 		auto* MutableUserConfiguration = MutableSessionConfiguration->mutable_user_configuration();
 		MutableUserConfiguration->set_id(_UserConfiguration.Id);
@@ -559,7 +570,7 @@ namespace Inworld {
 		}
 	}
 
-	void ItemsInEntitiesOperationEvent::ToProtoInternal(InworldPackets::InworldPacket& Proto) const
+	void ItemsInEntitiesOperationEventBase::ToProtoInternal(InworldPackets::InworldPacket& Proto) const
 	{
 		auto* MutableItemsInEntitiesOperation = Proto.mutable_entities_items_operation()->mutable_items_in_entities();
 		
@@ -578,18 +589,42 @@ namespace Inworld {
 		}
 	}
 
-	InworldPackets::entities::ItemsInEntitiesOperation_Type AddItemsInEntitiesOperationEvent::GetType() const
+	void PongEvent::ToProtoInternal(InworldPackets::InworldPacket& Proto) const
 	{
-		return InworldPackets::entities::ItemsInEntitiesOperation_Type::ItemsInEntitiesOperation_Type_ADD;
+		auto* MutablePingPong = Proto.mutable_latency_report()->mutable_ping_pong();
+		MutablePingPong->set_type(InworldPackets::PingPongReport_Type_PONG);
+
+		auto* MutablePingPacketId = MutablePingPong->mutable_ping_packet_id();
+		MutablePingPacketId->set_packet_id(_PingPacketId._UID);
+		MutablePingPacketId->set_utterance_id(_PingPacketId._UtteranceId);
+		MutablePingPacketId->set_interaction_id(_PingPacketId._InteractionId);
+		MutablePingPacketId->set_correlation_id(_PingPacketId._CorrelationId);
+
+		*MutablePingPong->mutable_ping_timestamp() = 
+			::google::protobuf_inworld::util::TimeUtil::TimeTToTimestamp(std::chrono::duration_cast<std::chrono::seconds>(_Timestamp.time_since_epoch()).count());
 	}
 
-	InworldPackets::entities::ItemsInEntitiesOperation_Type RemoveItemsInEntitiesOperationEvent::GetType() const
+	void PerceivedLatencyReportEventBase::ToProtoInternal(InworldPackets::InworldPacket& Proto) const
 	{
-		return InworldPackets::entities::ItemsInEntitiesOperation_Type::ItemsInEntitiesOperation_Type_REMOVE;
+		auto* MutablePerceivedLatencyReport = Proto.mutable_latency_report()->mutable_perceived_latency();
+		MutablePerceivedLatencyReport->set_precision(GetType());
+
+		*MutablePerceivedLatencyReport->mutable_latency() = ::google::protobuf_inworld::util::TimeUtil::MillisecondsToDuration(_Duration);
 	}
 
-	InworldPackets::entities::ItemsInEntitiesOperation_Type ReplaceItemsInEntitiesOperationEvent::GetType() const
-	{
-		return InworldPackets::entities::ItemsInEntitiesOperation_Type::ItemsInEntitiesOperation_Type_REPLACE;
+	LogEvent::LogEvent(const InworldPackets::InworldPacket& GrpcPacket) 
+		: Packet(GrpcPacket)
+			, _LogLevel(GrpcPacket.log().level())
+	{ 
+		const int indent = 4;
+		std::stringstream ss;
+		for(const InworldPackets::LogsEvent_LogDetail& logDetail : GrpcPacket.log().details()) {
+			ss << std::string(indent, ' ') << logDetail.text() << ": ";
+			std::string jsonOutput;
+			google::protobuf_inworld::util::MessageToJsonString(logDetail.detail(), &jsonOutput);
+			ss << jsonOutput << std::endl;
+		}
+		_Text = GrpcPacket.log().text() + "\n" + ss.str();
 	}
+
 }
