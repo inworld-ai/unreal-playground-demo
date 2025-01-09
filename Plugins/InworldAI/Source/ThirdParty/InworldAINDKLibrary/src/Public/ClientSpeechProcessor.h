@@ -40,34 +40,11 @@ namespace Inworld
     };
 
     using ClientSpeechPacketCallback = std::function<void(const std::shared_ptr<Packet>& Packet)>;
-    using ClientSpeechVADCallback = std::function<void(bool bVoiceDetected)>;
 
     class ClientSpeechProcessor;
     class Client;
-    struct ClientSpeechOptions
-    {
-        enum class SpeechMode : uint8_t
-        {
-            Default = 0,                // no VAD
-            VAD_DetectOnly = 1,         // detect voice to send callbacks, but send all player audio
-            VAD_DetectAndSendAudio = 2, // detect voice to send callbacks and send only voice audio
-        };  
-        SpeechMode Mode = SpeechMode::Default;
 
-        std::string VADModelPath;
-
-        float VADProbThreshhold = 0.3f;
-        uint8_t VADBufferChunksNum = 5;
-        uint8_t VADSilenceChunksNum = 5;
-
-        ClientSpeechPacketCallback PacketCb;
-        ClientSpeechVADCallback VADCb;
-        ClientSpeechVADCallback VADImmediateCb;
-
-    private:
-        std::unique_ptr<ClientSpeechProcessor> CreateSpeechProcessor();
-        friend class Client;
-    };
+    struct ClientSpeechOptions{};
     
     class INWORLD_EXPORT ClientSpeechProcessor
     {
@@ -79,6 +56,9 @@ namespace Inworld
         ClientSpeechProcessor(ClientSpeechProcessor&&) = delete;
         ClientSpeechProcessor& operator=(ClientSpeechProcessor&&) = delete;
 	    virtual ~ClientSpeechProcessor();
+
+        void SetOutgoingPacketCallback(ClientSpeechPacketCallback OutgoingPacketCb) { _OutgoingPacketCb = OutgoingPacketCb; }
+        void SetIncomingPacketCallback(ClientSpeechPacketCallback IncomingPacketCb) { _IncomingPacketCb = IncomingPacketCb; }
 
         virtual void StartAudioSession(const Inworld::Routing& Routing, const AudioSessionStartPayload& Payload);
         virtual void StopAudioSession(const Inworld::Routing& Routing);
@@ -96,7 +76,6 @@ namespace Inworld
 	    virtual void ClearState();
 
         AECFilter _EchoFilter;
-        ClientSpeechOptions _Options;
 	    AudioSessionStartPayload _AudioSessionPayload;
 	    Routing _Routing;
 	    bool _bSessionActive = false;
@@ -107,12 +86,19 @@ namespace Inworld
         bool _bDumpAudio = false;
         std::string _AudioDumpFileName = "C:/Tmp/AudioDump.wav";
 #endif
+
+        ClientSpeechPacketCallback _OutgoingPacketCb;
+        ClientSpeechPacketCallback _IncomingPacketCb;
     };
+
+    struct ClientSpeechOptions_Default : public ClientSpeechOptions {};
 
     class INWORLD_EXPORT ClientSpeechProcessor_Default : public ClientSpeechProcessor
     {
     public:
-        ClientSpeechProcessor_Default(const ClientSpeechOptions& Options) : ClientSpeechProcessor(Options) {}
+        ClientSpeechProcessor_Default(const ClientSpeechOptions_Default& Options)
+            : ClientSpeechProcessor(Options)
+        {}
 	    virtual ~ClientSpeechProcessor_Default() override = default;
         virtual void StartAudioSession(const Inworld::Routing& Routing, const AudioSessionStartPayload& Payload) override;
         virtual void StopAudioSession(const Inworld::Routing& Routing) override;
@@ -121,10 +107,19 @@ namespace Inworld
         virtual void ProcessAudio(const std::string& Data) override;
     };
 
+    struct ClientSpeechOptions_VAD : public ClientSpeechOptions
+    {
+        std::string VADModelPath;
+
+        float VADProbThreshhold = 0.3f;
+        uint8_t VADBufferChunksNum = 5;
+        uint8_t VADSilenceChunksNum = 5;
+    };
+
     class INWORLD_EXPORT ClientSpeechProcessor_VAD : public ClientSpeechProcessor
     {
     public:
-        ClientSpeechProcessor_VAD(const ClientSpeechOptions& Options);
+        ClientSpeechProcessor_VAD(const ClientSpeechOptions_VAD& Options);
 	    virtual ~ClientSpeechProcessor_VAD() override;
         
     protected:
@@ -136,12 +131,20 @@ namespace Inworld
         bool DetectVoice(const std::string& Data);
         
         uint8_t _VADSilenceCounter = 0;
+
+        float VADProbThreshhold = 0.3f;
+        uint8_t VADBufferChunksNum = 5;
+        uint8_t VADSilenceChunksNum = 5;
     };
+
+    struct ClientSpeechOptions_VAD_DetectOnly : public ClientSpeechOptions_VAD {};
 
     class INWORLD_EXPORT ClientSpeechProcessor_VAD_DetectOnly : public ClientSpeechProcessor_VAD
     {
     public:
-        ClientSpeechProcessor_VAD_DetectOnly(const ClientSpeechOptions& Options) : ClientSpeechProcessor_VAD(Options) {}
+        ClientSpeechProcessor_VAD_DetectOnly(const ClientSpeechOptions_VAD_DetectOnly& Options)
+            : ClientSpeechProcessor_VAD(Options)
+        {}
         virtual ~ClientSpeechProcessor_VAD_DetectOnly() override  = default;
         virtual void StartAudioSession(const Inworld::Routing& Routing, const AudioSessionStartPayload& Payload) override;
         virtual void StopAudioSession(const Inworld::Routing& Routing) override;
@@ -154,11 +157,15 @@ namespace Inworld
         bool _bVoiceDetected = false;
     };
 
-    class INWORLD_EXPORT ClientSpeechProcessor_VAD_DetectAndSendAudio : public ClientSpeechProcessor_VAD
+    struct ClientSpeechOptions_VAD_DetectAndFilterAudio : public ClientSpeechOptions_VAD {};
+
+    class INWORLD_EXPORT ClientSpeechProcessor_VAD_DetectAndFilterAudio : public ClientSpeechProcessor_VAD
     {
     public:
-        ClientSpeechProcessor_VAD_DetectAndSendAudio(const ClientSpeechOptions& Options) : ClientSpeechProcessor_VAD(Options) {}
-        virtual ~ClientSpeechProcessor_VAD_DetectAndSendAudio() override = default;
+        ClientSpeechProcessor_VAD_DetectAndFilterAudio(const ClientSpeechOptions_VAD_DetectAndFilterAudio& Options)
+            : ClientSpeechProcessor_VAD(Options)
+        {}
+        virtual ~ClientSpeechProcessor_VAD_DetectAndFilterAudio() override = default;
     protected:
         virtual void HandleVoiceDetected(const std::string& Data) override;
         virtual void HandleSilenceDetected(const std::string& Data) override;

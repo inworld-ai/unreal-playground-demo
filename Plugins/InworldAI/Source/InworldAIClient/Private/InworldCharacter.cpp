@@ -11,7 +11,7 @@
 #include "InworldPlayer.h"
 #include "InworldMacros.h"
 
-#include "InworldAIIntegrationModule.h"
+#include "InworldAIClientModule.h"
 
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/NetDriver.h"
@@ -19,11 +19,12 @@
 
 #include "Net/UnrealNetwork.h"
 
-#define EMPTY_ARG_RETURN(Arg, Return) INWORLD_WARN_AND_RETURN_EMPTY(LogInworldAIIntegration, UInworldCharacter, Arg, Return)
+#define EMPTY_ARG_RETURN(Arg, Return) INWORLD_WARN_AND_RETURN_EMPTY(LogInworldAIClient, UInworldCharacter, Arg, Return)
 #define NO_SESSION_RETURN(Return) EMPTY_ARG_RETURN(Session, Return)
 
 UInworldCharacter::UInworldCharacter()
 	: Super()
+	, Session(nullptr)
 	, PacketVisitor(MakeShared<FInworldCharacterPacketVisitor>(this))
 {}
 
@@ -81,14 +82,14 @@ void UInworldCharacter::SetSession(UInworldSession* InSession)
 		return;
 	}
 
-	if (Session && !AgentInfo.BrainName.IsEmpty())
+	if (Session.IsValid() && !AgentInfo.BrainName.IsEmpty())
 	{
 		Session->UnregisterCharacter(this);
 	}
 
 	Session = InSession;
 
-	if (Session && !AgentInfo.BrainName.IsEmpty())
+	if (Session.IsValid() && !AgentInfo.BrainName.IsEmpty())
 	{
 		Session->RegisterCharacter(this);
 	}
@@ -121,12 +122,12 @@ void UInworldCharacter::SendNarrationEvent(const FString& Content)
 	Session->SendNarrationEvent(this, Content);
 }
 
-void UInworldCharacter::SendAudioSessionStart(UInworldPlayer* Player, FInworldAudioSessionOptions SessionOptions)
+void UInworldCharacter::SendAudioSessionStart(FInworldAudioSessionOptions SessionOptions)
 {
 	NO_SESSION_RETURN(void())
 	EMPTY_ARG_RETURN(AgentInfo.AgentId, void())
 
-	Session->SendAudioSessionStart(this, Player, SessionOptions);
+	Session->SendAudioSessionStart(this, SessionOptions);
 }
 
 void UInworldCharacter::SendAudioSessionStop()
@@ -154,15 +155,6 @@ void UInworldCharacter::CancelResponse(const FString& InteractionId, const TArra
 	EMPTY_ARG_RETURN(UtteranceIds, void())
 
 	Session->CancelResponse(this, InteractionId, UtteranceIds);
-}
-
-TScriptInterface<IInworldCharacterOwnerInterface> UInworldCharacter::GetInworldCharacterOwner()
-{
-	if (!ensureMsgf(GetOuter()->Implements<UInworldCharacterOwnerInterface>(), TEXT("UInworldCharacter outer must implement IInworldCharacterOwnerInterface!")))
-	{
-		return nullptr;
-	}
-	return TScriptInterface<IInworldCharacterOwnerInterface>(GetOuter());
 }
 
 void UInworldCharacter::SetBrainName(const FString& BrainName)
@@ -245,25 +237,18 @@ void UInworldCharacter::OnRep_TargetPlayer(UInworldPlayer* OldTargetPlayer)
 {
 	OnTargetPlayerChangedDelegateNative.Broadcast();
 	OnTargetPlayerChangedDelegate.Broadcast();
-
-	if (OldTargetPlayer && OnVADHandle.IsValid())
-	{
-		OldTargetPlayer->OnVoiceDetection().Remove(OnVADHandle);
-	}
-	if (TargetPlayer)
-	{
-		OnVADHandle = TargetPlayer->OnVoiceDetection().AddLambda(
-			[this](bool bVoiceDetected) -> void
-		{
-			GetInworldCharacterOwner()->HandleTargetPlayerVoiceDetection(bVoiceDetected);
-		});
-	}
 }
 
 void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldTextEvent& Event)
 {
 	Character->OnInworldTextEventDelegateNative.Broadcast(Event);
 	Character->OnInworldTextEventDelegate.Broadcast(Event);
+}
+
+void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldVADEvent& Event)
+{
+	Character->OnInworldVADEventDelegateNative.Broadcast(Event);
+	Character->OnInworldVADEventDelegate.Broadcast(Event);
 }
 
 void UInworldCharacter::FInworldCharacterPacketVisitor::Visit(const FInworldAudioDataEvent& Event)

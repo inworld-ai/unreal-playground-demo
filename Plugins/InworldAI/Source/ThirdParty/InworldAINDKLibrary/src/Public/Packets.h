@@ -32,6 +32,9 @@ namespace ai { namespace inworld { namespace packets {
 	enum Playback : int;
     enum ConversationEventPayload_ConversationEventType : int;
 	enum CustomEvent_Type : int;
+	enum PingPongReport_Type : int;
+	enum PerceivedLatencyReport_Precision : int;
+	enum LogsEvent_LogLevel : int;
 
 	namespace entities {
 		enum ItemsInEntitiesOperation_Type : int;
@@ -96,13 +99,14 @@ namespace Inworld {
 	struct INWORLD_EXPORT PacketId {
 		// Constructs with all random parameters.
         PacketId()
-			: PacketId(RandomUUID(), RandomUUID(), RandomUUID())
+			: PacketId(RandomUUID(), RandomUUID(), RandomUUID(), RandomUUID())
 		{}
         PacketId(const InworldPackets::PacketId& Other);
-		PacketId(const std::string& UID, const std::string& UtteranceId, const std::string& InteractionId) 
+		PacketId(const std::string& UID, const std::string& UtteranceId, const std::string& InteractionId, const std::string& CorrelationId) 
 			: _UID(UID)
 			, _UtteranceId(UtteranceId)
 			, _InteractionId(InteractionId)
+			, _CorrelationId(CorrelationId)
 		{}
 
         InworldPackets::PacketId ToProto() const;
@@ -113,9 +117,11 @@ namespace Inworld {
         std::string _UtteranceId;
         // Interaction start when player triggers it and finished when agent answers to player.
         std::string _InteractionId;
+		std::string _CorrelationId;
 	};
 
     class TextEvent;
+	class VADEvent;
     class DataEvent;
     class AudioDataEvent;
 	class A2FHeaderEvent;
@@ -130,11 +136,14 @@ namespace Inworld {
     class CustomEvent;
 	class ActionEvent;
 	class RelationEvent;
+	class PingEvent;
+	class LogEvent;
 
     class INWORLD_EXPORT PacketVisitor
     {
     public:
         virtual void Visit(const TextEvent& Event) {  }
+		virtual void Visit(const VADEvent& Event) {  }
         virtual void Visit(const DataEvent& Event) {  }
         virtual void Visit(const AudioDataEvent& Event) {  }
 		virtual void Visit(const A2FHeaderEvent& Event) {  }
@@ -149,6 +158,8 @@ namespace Inworld {
         virtual void Visit(const CustomEvent& Event) {  }
     	virtual void Visit(const ActionEvent& Event) { }
     	virtual void Visit(const RelationEvent& Event) { }
+		virtual void Visit(const PingEvent& Event) { }
+		virtual void Visit(const LogEvent& Event) { }
     };
 
 	struct EmotionalState;
@@ -164,7 +175,7 @@ namespace Inworld {
 		{}
 		virtual ~Packet() = default;
 
-		virtual void Accept(PacketVisitor& Visitor) {}
+		virtual void Accept(PacketVisitor& Visitor) = 0;
 
 		InworldPackets::InworldPacket ToProto() const;
 
@@ -191,6 +202,8 @@ namespace Inworld {
 		const std::string& GetText() const { return _Text; }
 
         bool IsFinal() const { return _Final; }
+
+		InworldPackets::TextEvent_SourceType GetSourceType() const { return _SourceType; }
 
 	protected:
         virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
@@ -250,6 +263,23 @@ namespace Inworld {
 	private:
 		std::vector<PhonemeInfo> _PhonemeInfos;
 	};
+
+	class INWORLD_EXPORT VADEvent : public Packet
+	{
+	public:
+		VADEvent() = default;
+		VADEvent(bool VoiceDetected, const Routing& Routing)
+			: Packet(Routing)
+			, _VoiceDetected(VoiceDetected)
+		{}
+
+		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
+
+		bool IsVoiceDetected() const { return _VoiceDetected; }
+
+	private:
+		bool _VoiceDetected;
+  };
 
 	class INWORLD_EXPORT A2FHeaderEvent : public Packet
 	{
@@ -379,6 +409,13 @@ namespace Inworld {
 			bool MultiAgent = true;
 			bool Audio2Face = false;
 			bool MultiModalActionPlanning = false;
+			bool PingPongReport = true;
+			bool PerceivedLatencyReport = true;
+			bool Logs = false;
+			bool LogsWarning = true;
+			bool LogsInfo = true;
+			bool LogsDebug = false;
+			bool LogsInternal = false;
 		};
 
 		struct INWORLD_EXPORT UserConfiguration
@@ -645,6 +682,8 @@ namespace Inworld {
 	{
 	public:
 		SessionControlEvent();
+
+		virtual void Accept(PacketVisitor& Visitor) override { /* Outgoing Only */ }
 	};
 
 	class INWORLD_EXPORT SessionControlEvent_LoadScene : public SessionControlEvent
@@ -719,6 +758,8 @@ namespace Inworld {
 		EntitiesItemsOperationEvent(const Routing& Routing)
 			: Packet(Routing)
 		{}
+		
+		virtual void Accept(PacketVisitor & Visitor) override { /* Outgoing Only */ }
 
 	protected:
 		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const = 0;
@@ -762,10 +803,10 @@ namespace Inworld {
 		std::vector<std::string> _ItemIds;
 	};
 
-	class INWORLD_EXPORT ItemsInEntitiesOperationEvent : public EntitiesItemsOperationEvent
+	class INWORLD_EXPORT ItemsInEntitiesOperationEventBase : public EntitiesItemsOperationEvent
 	{
 	public:
-		ItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+		ItemsInEntitiesOperationEventBase(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
 			: EntitiesItemsOperationEvent()
 			, _ItemIds(ItemIds)
 			, _EntityNames(EntityNames)
@@ -780,33 +821,97 @@ namespace Inworld {
 		std::vector<std::string> _EntityNames;
 	};
 
-	class INWORLD_EXPORT AddItemsInEntitiesOperationEvent : public ItemsInEntitiesOperationEvent
+	template<InworldPackets::entities::ItemsInEntitiesOperation_Type T>
+	class INWORLD_EXPORT ItemsInEntitiesOperationEvent : public ItemsInEntitiesOperationEventBase
 	{
 	public:
-		AddItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
-			: ItemsInEntitiesOperationEvent(ItemIds, EntityNames)
+		ItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
+			: ItemsInEntitiesOperationEventBase(ItemIds, EntityNames)
 		{}
 
-		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const override;
+		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const override
+		{
+			return T;
+		}
 	};
 
-	class INWORLD_EXPORT RemoveItemsInEntitiesOperationEvent : public ItemsInEntitiesOperationEvent
+	class INWORLD_EXPORT PingEvent : public Packet
 	{
 	public:
-		RemoveItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
-			: ItemsInEntitiesOperationEvent(ItemIds, EntityNames)
+		PingEvent() = default;
+		PingEvent(const InworldPackets::InworldPacket& GrpcPacket)
+			: Packet(GrpcPacket)
 		{}
 
-		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const override;
+		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
 	};
 
-	class INWORLD_EXPORT ReplaceItemsInEntitiesOperationEvent : public ItemsInEntitiesOperationEvent
+	class INWORLD_EXPORT PongEvent : public Packet
 	{
 	public:
-		ReplaceItemsInEntitiesOperationEvent(const std::vector<std::string>& ItemIds, const std::vector<std::string>& EntityNames)
-			: ItemsInEntitiesOperationEvent(ItemIds, EntityNames)
+		PongEvent() = default;
+		PongEvent(const PingEvent& Ping)
+			: Packet(Routing::Player2World())
+			, _PingPacketId(Ping._PacketId)
+			, _PingTimestamp(Ping._Timestamp)
 		{}
 
-		virtual InworldPackets::entities::ItemsInEntitiesOperation_Type GetType() const override;
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
+
+		virtual void Accept(PacketVisitor& Visitor) override { /* Outgoing Only */ }
+
+	private:
+		PacketId _PingPacketId;
+		std::chrono::system_clock::time_point _PingTimestamp;
 	};
+
+	class INWORLD_EXPORT PerceivedLatencyReportEventBase : public Packet
+	{
+	public:
+		PerceivedLatencyReportEventBase(uint32_t Duration)
+			: Packet(Routing::Player2World())
+			, _Duration(Duration)
+		{}
+
+		virtual InworldPackets::PerceivedLatencyReport_Precision GetType() const = 0;
+
+		virtual void ToProtoInternal(InworldPackets::InworldPacket& Proto) const override;
+
+		virtual void Accept(PacketVisitor& Visitor) override { /* Outgoing Only */ }
+
+	private:
+		uint32_t _Duration;
+	};
+
+	template<InworldPackets::PerceivedLatencyReport_Precision T>
+	class INWORLD_EXPORT PerceivedLatencyReportEvent : public PerceivedLatencyReportEventBase
+	{
+
+	public:
+		PerceivedLatencyReportEvent(uint32_t Duration)
+			: PerceivedLatencyReportEventBase(Duration)
+		{}
+
+		virtual InworldPackets::PerceivedLatencyReport_Precision GetType() const override
+		{
+			return T;
+		}
+	};
+
+	class INWORLD_EXPORT LogEvent : public Packet
+	{
+	public:
+		LogEvent() = default;
+		LogEvent(const InworldPackets::InworldPacket& GrpcPacket);
+
+		const InworldPackets::LogsEvent_LogLevel GetLogLevel() const { return _LogLevel; }
+		const std::string& GetLogText() const { return _Text; }
+
+		virtual void Accept(PacketVisitor& Visitor) override { Visitor.Visit(*this); }
+
+	private:
+		std::string _Text;
+		InworldPackets::LogsEvent_LogLevel _LogLevel;
+	};
+
 }
